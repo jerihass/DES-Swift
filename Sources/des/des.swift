@@ -13,7 +13,7 @@ infix operator <<<
 infix operator >>>
 
 extension BinaryInteger {
-    
+
     /// Left circular shift
     /// - Parameters:
     ///   - lhs: Binary Integer to shift
@@ -21,13 +21,13 @@ extension BinaryInteger {
     /// - Returns: Left circular shifts: 0b1011 -> 0b0111
     mutating func lcs(by: Self) -> Self { self <<< by }
     static func <<< <RHS>(lhs: inout Self, rhs: RHS) -> Self where RHS: BinaryInteger {
-         let shiftCount = Int(rhs) % lhs.bitWidth
-         if shiftCount > 0 {
-             let shifted = (lhs << shiftCount) | (lhs >> (lhs.bitWidth - shiftCount))
-             lhs = shifted
-         }
-         return lhs
-     }
+        let shiftCount = Int(rhs) % lhs.bitWidth
+        if shiftCount > 0 {
+            let shifted = (lhs << shiftCount) | (lhs >> (lhs.bitWidth - shiftCount))
+            lhs = shifted
+        }
+        return lhs
+    }
 
     /// Right circular shift
     /// - Parameters:
@@ -44,6 +44,15 @@ extension BinaryInteger {
         }
         return lhs
     }
+
+    
+    /// GetBit
+    /// - Parameter position: position at location from 1-size of item in bits left to right
+    /// - Returns: gets the value as a 1 or zero at that position
+    func getBit(_ position: Self) -> Self {
+        let value = self >> (self.bitWidth - Int(position)) & 1
+        return value
+    }
 }
 
 extension UInt64 {
@@ -52,11 +61,6 @@ extension UInt64 {
         let left = UInt32(self &>> fraction)
         let right = UInt32(((self &<< fraction) >> fraction))
         return (left, right)
-    }
-
-    func getBit(_ position: UInt64) -> Self {
-        let value = self >> (64 - position) & 1
-        return value
     }
 }
 

@@ -104,4 +104,11 @@ final class desTests: XCTestCase {
         let permuted = sut.permutate(bit32)
         XCTAssertEqual(permuted, 0b0101_1001_1110_1010_0000_0111_1100_0101)
     }
+
+    func test_shouldLoolkupS1Value() throws {
+        let sixBit: UInt8 = 0b00100000 //row 2 column 0 -> 4
+        let sut = DES(key: 0)
+        let s1 = sut.sfunction(sixBit, sTable: DES.s1)
+        XCTAssertEqual(s1, 0b00000100)
+    }
 }

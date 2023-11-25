@@ -49,6 +49,20 @@ class DES {
         return pc1
     }
 
+    internal func sfunction(_ bit8: UInt8, sTable: BITable ) -> UInt8? {
+        // determine row
+        let r1 = bit8.getBit(3)
+        let r2 = bit8.getBit(8)
+        let row = (r1 << 1) | r2
+
+        let column = (bit8 << 3) >> 5
+
+        let index = (row * 16) + column
+
+        let value = sTable.lookup(Int(index)) as? UInt8
+        return value
+    }
+
     internal var pc1_left: UInt32 {
         var pc1: UInt32 = 0
         for location in DES.pc1_left.values.enumerated() {
@@ -151,4 +165,13 @@ extension DES {
                               14, 6, 61, 53, 45, 37, 29,
                               21, 13, 5, 28, 20, 12, 4]
         return BITable(values: table)}()
+
+    static let s1: BITable = {
+        let table: [UInt8] = [
+            14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7,
+            0, 15, 7, 4, 14, 2, 13, 1, 10, 6, 12, 11, 9, 5, 3, 8,
+            4, 1, 14, 8, 13, 6, 2, 11, 15, 12, 9, 7, 3, 10, 5, 0,
+            15, 12, 8, 2, 4, 9, 1, 7, 5, 11, 3, 14, 10, 0, 6, 13]
+        return BITable(values: table)
+    }()
 }

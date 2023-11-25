@@ -2,6 +2,9 @@ import XCTest
 @testable import des
 
 final class desTests: XCTestCase {
+
+    let testBits: UInt64 = 0b1111111111111111111111111111111100000000000000000000000000000000
+
     func test_shouldLeftCircShift() throws {
         var bits: UInt8 = 0b10000001
         XCTAssertEqual(bits <<< 1, 0b00000011)
@@ -26,5 +29,20 @@ final class desTests: XCTestCase {
         print(table)
         let value = table.lookup(0) as? UInt8
         XCTAssertEqual(value, UInt8(58))
+    }
+
+    func test_shouldGetBitAtPosition() throws {
+        let value = testBits
+        var bit = value.getBit(1)
+        XCTAssertEqual(bit, 1)
+        bit = value.getBit(33)
+        XCTAssertEqual(bit, 0)
+    }
+
+    func test_shouldPC1OfKey() throws {
+        let sut = DES(key: testBits)
+        let pc1 = sut.pc1_left
+        XCTAssertEqual(pc1, 0b0000111100001111000011110000)
+        print(pc1)
     }
 }

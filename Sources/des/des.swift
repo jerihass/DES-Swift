@@ -1,6 +1,7 @@
 // The Swift Programming Language
 // https://docs.swift.org/swift-book
 
+import Foundation
 
 func leftCirShift(_ bits: UInt64, by: Int = 0) -> UInt64 {
     var shift: UInt64 = 0
@@ -52,6 +53,11 @@ extension UInt64 {
         let right = UInt32(((self &<< fraction) >> fraction))
         return (left, right)
     }
+
+    func getBit(_ position: UInt64) -> Self {
+        let value = self >> (64 - position) & 1
+        return value
+    }
 }
 
 extension UInt32 {
@@ -80,6 +86,55 @@ struct BITable {
 }
 
 class DES {
+    let key: UInt64
+//
+//    init(key: Data) {
+//        self.key = key.base64EncodedString().utf8
+//    }
+
+    init(key: UInt64) {
+        self.key = key
+    }
+
+    internal var pc1_left: UInt32 {
+        var pc1: UInt32 = 0
+        for location in DES.pc1_left.values.enumerated() {
+            let loc = UInt8(location.offset)
+            var val = UInt32(key.getBit(UInt64(location.element)))
+            val = val << loc
+            print(val)
+            pc1 = pc1 | val
+        }
+        return pc1
+    }
+    internal var pc1: UInt64 { return determinePermChoice1() }
+    private func determinePermChoice1() -> UInt64 {
+        0
+    }
+}
+
+extension DES {
+    static let interationShifts = {
+        var dict: [Int:Int] = [:]
+        dict[1] = 1
+        dict[2] = 1
+        dict[3] = 2
+        dict[4] = 2
+        dict[5] = 2
+        dict[6] = 2
+        dict[7] = 2
+        dict[8] = 2
+        dict[9] = 1
+        dict[10] = 2
+        dict[11] = 2
+        dict[12] = 2
+        dict[13] = 2
+        dict[14] = 2
+        dict[15] = 2
+        dict[16] = 1
+        return dict
+    }()
+
     static let ip: BITable = {
         let table: [UInt8] = [58, 50, 42, 34, 26, 18, 10, 2,
                               60, 52, 44, 36, 28, 20, 12, 4,

@@ -17,13 +17,13 @@ final class desTests: XCTestCase {
         XCTAssertEqual(bits.rcs(by: 1), 0b11000000)
     }
 
-    func test_shouldLeftCircShiftOne() throws {
+    func test_shouldLeftLimitedCircShiftOne() throws {
         var bits: UInt32 = 0b0000100000000000_0000000000000001
         bits = singleLeftshift(bits)!
         XCTAssertEqual(bits, 0b0000000000000000_0000000000000011)
     }
 
-    func test_shouldLeftCircShiftTwo() throws {
+    func test_shouldLeftLimitedCircShiftTwo() throws {
         var bits: UInt32 = 0b0000110000000000_0000000000000001
         bits = doubleLeftshift(bits)!
         XCTAssertEqual(bits, 0b0000000000000000_0000000000000111)
@@ -75,7 +75,7 @@ final class desTests: XCTestCase {
         XCTAssertEqual(String(binaryString), testString)
     }
 
-    func test_shouldEncypherWithInitialPermuation() throws {
+    func test_shouldEncypherWithInitialPermuationAndProvideProperSplits() throws {
         let binaryMessage: UInt64 = 0b0101_0101_0101_0101_0101_0101_0101_0101_0101_0101_0101_0101_0101_0101_0101_0101
         XCTAssertEqual(binaryMessage.getBit(58), 1)
         let key = "!GoodKey"
@@ -83,7 +83,11 @@ final class desTests: XCTestCase {
 
         let sut = DES(key: binaryKey)
         sut.setBlock(binaryMessage)
-        let ip = sut.initialPermutation()
+        let ip = try XCTUnwrap(sut.initialPermutation())
         XCTAssertEqual(ip, 0b1111_1111_1111_1111_1111_1111_1111_1111_0000_0000_0000_0000_0000_0000_0000_0000)
+
+        let split = ip.split()
+        XCTAssertEqual(split.0, 0b1111_1111_1111_1111_1111_1111_1111_1111)
+        XCTAssertEqual(split.1, 0b0000_0000_0000_0000_0000_0000_0000_0000)
     }
 }

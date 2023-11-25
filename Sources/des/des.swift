@@ -5,9 +5,26 @@ import Foundation
 
 class DES {
     let key: UInt64
+    var messageBlock: UInt64?
 
     init(key: UInt64) {
         self.key = key
+    }
+
+    func setBlock(_ block: UInt64) {
+        messageBlock = block
+    }
+
+    internal func initialPermutation() -> UInt64? {
+        guard let message = messageBlock else { return nil }
+        var pc1: UInt64 = 0
+        for location in DES.ip.values.enumerated() {
+            let loc = UInt8(location.offset)
+            var val = UInt64(message.getBit(UInt64(location.element)))
+            val = (val << (63 - loc))
+            pc1 = pc1 | val
+        }
+        return pc1
     }
 
     internal var pc1_left: UInt32 {

@@ -74,4 +74,16 @@ final class desTests: XCTestCase {
         XCTAssertEqual(binaryString, 0b0111001101111001011001010100101101110100011100110110010101010100)
         XCTAssertEqual(String(binaryString), testString)
     }
+
+    func test_shouldEncypherWithInitialPermuation() throws {
+        let binaryMessage: UInt64 = 0b0101_0101_0101_0101_0101_0101_0101_0101_0101_0101_0101_0101_0101_0101_0101_0101
+        XCTAssertEqual(binaryMessage.getBit(58), 1)
+        let key = "!GoodKey"
+        let binaryKey = try XCTUnwrap(key.uint64)
+
+        let sut = DES(key: binaryKey)
+        sut.setBlock(binaryMessage)
+        let ip = sut.initialPermutation()
+        XCTAssertEqual(ip, 0b1111_1111_1111_1111_1111_1111_1111_1111_0000_0000_0000_0000_0000_0000_0000_0000)
+    }
 }

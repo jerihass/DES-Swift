@@ -38,6 +38,17 @@ class DES {
         return pc1
     }
 
+    internal func permutate(_ bit32: UInt32) -> UInt32 {
+        var pc1: UInt32 = 0
+        for location in DES.p.values.enumerated() {
+            let loc = UInt32(location.offset)
+            var val = UInt32(bit32.getBit(UInt32(location.element)))
+            val = val << (31 - loc)
+            pc1 = pc1 | val
+        }
+        return pc1
+    }
+
     internal var pc1_left: UInt32 {
         var pc1: UInt32 = 0
         for location in DES.pc1_left.values.enumerated() {

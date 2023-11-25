@@ -93,11 +93,15 @@ final class desTests: XCTestCase {
 
     func test_shouldGetEFrom32BitBlock() throws {
         let bit32: UInt32 = 0b0101_0101_0101_0101_0101_0101_0101_0101
-
-        XCTAssertEqual(bit32.getBit(1), 0)
-        XCTAssertEqual(bit32.getBit(2), 1)
         let sut = DES(key: 0)
         let ebits = sut.ebit(bit32)
         XCTAssertEqual(ebits, 0b101010_101010_101010_101010_101010_101010_101010_101010)
+    }
+
+    func test_should32BitPermutate() throws {
+        let bit32: UInt32 = 0b1010_1010_1010_1010_1010_1010_1010_1010
+        let sut = DES(key: 0)
+        let permuted = sut.permutate(bit32)
+        XCTAssertEqual(permuted, 0b0101_1001_1110_1010_0000_0111_1100_0101)
     }
 }

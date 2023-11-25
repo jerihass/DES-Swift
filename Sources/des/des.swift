@@ -87,10 +87,6 @@ struct BITable {
 
 class DES {
     let key: UInt64
-//
-//    init(key: Data) {
-//        self.key = key.base64EncodedString().utf8
-//    }
 
     init(key: UInt64) {
         self.key = key
@@ -101,11 +97,8 @@ class DES {
         for location in DES.pc1_left.values.enumerated() {
             let loc = UInt8(location.offset)
             var val = UInt32(key.getBit(UInt64(location.element)))
-            let shift = (27 - loc)
-            val = val << shift
-            print("shift: \(shift)\nloc: \(loc)\nval: \(String(val, radix: 2))")
+            val = val << (27 - loc)
             pc1 = pc1 | val
-            print("pc1: \(String(pc1, radix: 2))")
         }
         return pc1
     }
@@ -117,16 +110,9 @@ class DES {
             var val = UInt32(key.getBit(UInt64(location.element)))
             val = val << (27 - loc)
             pc1 = pc1 | val
-            print("pc2: \(String(pc1, radix: 2))")
-
         }
         return pc1
     }
-
-//    internal var pc1: UInt64 { return determinePermChoice1() }
-//    private func determinePermChoice1() -> UInt64 {
-//        0
-//    }
 }
 
 extension DES {

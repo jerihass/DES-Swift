@@ -46,11 +46,54 @@ final class desTests: XCTestCase {
 
     func test_shouldPC1OfKey() throws {
         print(testBits)
-        let sut = DES(key: testBits)
+        var sut = DES(key: testBits)
         var pc1 = sut.pc1_left
+        print(pc1)
         XCTAssertEqual(pc1, 0b0000111100001111000011110000)
 
         pc1 = sut.pc1_right
         XCTAssertEqual(pc1, 0b0000111100001111000011111111)
+
+        let testKey = "TestKeys"
+        let binary = testKey.uint64
+    }
+
+    func test_shouldConvert64BitStringToUInt64() throws {
+        let testString = "TestKeys"
+        let binaryString = try XCTUnwrap(testString.uint64)
+        let string = String(binaryString)
+        XCTAssertEqual(string, testString)
+    }
+}
+
+
+extension String {
+    var uint64: UInt64? {
+        guard let data = self.data(using: .utf8) else { return nil }
+        return data.withUnsafeBytes { $0.load(as: UInt64.self) }
+    }
+
+    init(_ uint64: UInt64) {
+        var byteArray: [UInt8] = Array(repeating: 0, count: MemoryLayout<UInt64>.size)
+        withUnsafeBytes(of: uint64) { rawBufferPointer in
+            if let baseAddress = rawBufferPointer.baseAddress {
+                byteArray.withUnsafeMutableBytes { mutableRawBufferPointer in
+                    mutableRawBufferPointer.copyMemory(from: UnsafeRawBufferPointer(start: baseAddress, count: MemoryLayout<UInt64>.size))
+                }
+            }
+        }
+        self = String(bytes: byteArray, encoding: .utf8) ?? ""
+    }
+
+    static func fromUInt64(_ uint64: UInt64) -> String? {
+        var byteArray: [UInt8] = Array(repeating: 0, count: MemoryLayout<UInt64>.size)
+        withUnsafeBytes(of: uint64) { rawBufferPointer in
+            if let baseAddress = rawBufferPointer.baseAddress {
+                byteArray.withUnsafeMutableBytes { mutableRawBufferPointer in
+                    mutableRawBufferPointer.copyMemory(from: UnsafeRawBufferPointer(start: baseAddress, count: MemoryLayout<UInt64>.size))
+                }
+            }
+        }
+        return String(bytes: byteArray, encoding: .utf8)
     }
 }

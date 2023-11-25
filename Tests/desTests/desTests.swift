@@ -32,17 +32,25 @@ final class desTests: XCTestCase {
     }
 
     func test_shouldGetBitAtPosition() throws {
-        let value = testBits
+        let value: UInt64 = 0b1000000000000000000000000000000000000000000000000000000000000001
         var bit = value.getBit(1)
+        for i in 0..<64 {
+            print("Index: \(i) : \(value.getBit(UInt64(i)))")
+        }
         XCTAssertEqual(bit, 1)
         bit = value.getBit(33)
         XCTAssertEqual(bit, 0)
+        bit = value.getBit(64)
+        XCTAssertEqual(bit, 1)
     }
 
     func test_shouldPC1OfKey() throws {
+        print(testBits)
         let sut = DES(key: testBits)
-        let pc1 = sut.pc1_left
+        var pc1 = sut.pc1_left
         XCTAssertEqual(pc1, 0b0000111100001111000011110000)
-        print(pc1)
+
+        pc1 = sut.pc1_right
+        XCTAssertEqual(pc1, 0b0000111100001111000011111111)
     }
 }

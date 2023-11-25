@@ -90,4 +90,14 @@ final class desTests: XCTestCase {
         XCTAssertEqual(split.0, 0b1111_1111_1111_1111_1111_1111_1111_1111)
         XCTAssertEqual(split.1, 0b0000_0000_0000_0000_0000_0000_0000_0000)
     }
+
+    func test_shouldGetEFrom32BitBlock() throws {
+        let bit32: UInt32 = 0b0101_0101_0101_0101_0101_0101_0101_0101
+
+        XCTAssertEqual(bit32.getBit(1), 0)
+        XCTAssertEqual(bit32.getBit(2), 1)
+        let sut = DES(key: 0)
+        let ebits = sut.ebit(bit32)
+        XCTAssertEqual(ebits, 0b101010_101010_101010_101010_101010_101010_101010_101010)
+    }
 }

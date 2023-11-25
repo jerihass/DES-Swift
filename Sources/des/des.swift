@@ -19,7 +19,7 @@ class DES {
         guard let message = messageBlock else { return nil }
         var pc1: UInt64 = 0
         for location in DES.ip.values.enumerated() {
-            let loc = UInt8(location.offset)
+            let loc = UInt64(location.offset)
             var val = UInt64(message.getBit(UInt64(location.element)))
             val = (val << (63 - loc))
             pc1 = pc1 | val
@@ -27,10 +27,21 @@ class DES {
         return pc1
     }
 
+    internal func ebit(_ bit32: UInt32) -> UInt64 {
+        var pc1: UInt64 = 0
+        for location in DES.e_bit.values.enumerated() {
+            let loc = UInt32(location.offset)
+            var val = UInt64(bit32.getBit(UInt32(location.element)))
+            val = val << (47 - loc)
+            pc1 = pc1 | UInt64(val)
+        }
+        return pc1
+    }
+
     internal var pc1_left: UInt32 {
         var pc1: UInt32 = 0
         for location in DES.pc1_left.values.enumerated() {
-            let loc = UInt8(location.offset)
+            let loc = UInt32(location.offset)
             var val = UInt32(key.getBit(UInt64(location.element)))
             val = val << (27 - loc)
             pc1 = pc1 | val
@@ -41,7 +52,7 @@ class DES {
     internal var pc1_right: UInt32 {
         var pc1: UInt32 = 0
         for location in DES.pc1_right.values.enumerated() {
-            let loc = UInt8(location.offset)
+            let loc = UInt32(location.offset)
             var val = UInt32(key.getBit(UInt64(location.element)))
             val = val << (27 - loc)
             pc1 = pc1 | val

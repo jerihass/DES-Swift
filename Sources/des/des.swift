@@ -15,6 +15,12 @@ class DES {
         messageBlock = block
     }
 
+    internal func genKey() -> UInt64 {
+        let left = UInt64(pc1_left << 24)
+        let right = UInt64(pc1_right)
+        return (left | right)
+    }
+
     internal func initialPermutation() -> UInt64? {
         guard let message = messageBlock else { return nil }
         var pc1: UInt64 = 0
@@ -27,7 +33,7 @@ class DES {
         return pc1
     }
 
-    internal func ebit(_ bit32: UInt32) -> UInt64 {
+    internal func expansion(_ bit32: UInt32) -> UInt64 {
         var pc1: UInt64 = 0
         for location in DES.e_bit.values.enumerated() {
             let loc = UInt32(location.offset)
@@ -80,9 +86,19 @@ class DES {
         }
         return pc1
     }
-}
 
-protocol STable {}
+    internal func pc2Create(_ bit56: UInt64) -> UInt64 {
+        var pc2: UInt64 = 0
+        for location in DES.pc2.values.enumerated() {
+            let loc = UInt64(location.offset)
+            var val = UInt64(bit56.getBit(UInt64(Int(location.element) + 8)))
+            val = val << (47 - loc)
+            pc2 = pc2 | val
+            print("Val: \(val) | PC2: \(String(pc2, radix: 2))")
+        }
+        return pc2
+    }
+}
 
 extension DES {
     static let interationShifts = {

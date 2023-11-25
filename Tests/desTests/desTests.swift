@@ -94,7 +94,7 @@ final class desTests: XCTestCase {
     func test_shouldGetEFrom32BitBlock() throws {
         let bit32: UInt32 = 0b0101_0101_0101_0101_0101_0101_0101_0101
         let sut = DES(key: 0)
-        let ebits = sut.ebit(bit32)
+        let ebits = sut.expansion(bit32)
         XCTAssertEqual(ebits, 0b101010_101010_101010_101010_101010_101010_101010_101010)
     }
 
@@ -110,5 +110,20 @@ final class desTests: XCTestCase {
         let sut = DES(key: 0)
         let s1 = sut.sfunction(sixBit, sTable: DES.s1)
         XCTAssertEqual(s1, 0b00000100)
+    }
+
+    func test_shouldGet48BitKeyFrom64Bits() throws {
+        let key64 = UInt64.random(in: 0...UInt64.max)
+        let sut = DES(key: key64)
+        let key48 = sut.genKey()
+        print(key48)
+        XCTAssertNotEqual(key48, 0)
+    }
+
+    func test_shouldPC2Value() throws {
+        let bit56: UInt64 = 0b1010_1010_1010_1010_1010_1010_1010_1010_1010_1010_1010_1010_1010_1010
+        let sut = DES(key: 0)
+        let pc2 = sut.pc2Create(bit56)
+        XCTAssertEqual(pc2, 0b011011_101010_110000_011010_101111_001110_011001_000010)
     }
 }

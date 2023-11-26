@@ -148,6 +148,10 @@ final class desTests: XCTestCase {
         let sut = DES(key: badKey)
         let pc2Choices = sut.generatePC2List()
         XCTAssertEqual(pc2Choices.count, 16)
+        for pc2Choice in pc2Choices {
+            let stringbytes = Array(pc2Choice.description.utf8CString)
+            print(stringbytes)
+        }
     }
 
     func test_canPerformInitialSetup() throws {

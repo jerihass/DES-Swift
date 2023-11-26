@@ -37,10 +37,12 @@ class DES {
                 tempLeft = singleLeftshift(kL) ?? 0
                 tempRight = singleLeftshift(kR) ?? 0
             }
-//            let pc2 = pc2c
-            pc2List.append(0)
+            let pc2 = pc2Create(tempLeft, tempRight)
+            pc2List.append(pc2)
+            kL = tempLeft
+            kR = tempRight
         }
-        return []
+        return pc2List
     }
 
     internal func combineKVals(_ left: UInt64, _ right: UInt64) -> UInt64 {

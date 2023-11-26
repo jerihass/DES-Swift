@@ -6,6 +6,7 @@ import Foundation
 class DES {
     let key: UInt64
     var messageBlock: UInt64?
+    lazy var pc2List: [UInt64] = { generatePC2List() }()
 
     init(key: UInt64) {
         self.key = key
@@ -13,6 +14,19 @@ class DES {
 
     func setBlock(_ block: UInt64) {
         messageBlock = block
+    }
+
+    internal func encryptBlock(with pc2: UInt64) -> (UInt32, UInt32) {
+        guard let l = messageBlock?.split().0 else { return (0,0) }
+        guard let r = messageBlock?.split().1 else { return (0,0) }
+
+        let rExp = expansion(r)
+        let xOR = rExp ^ pc2
+        // do s-box stuff
+        // permutate
+        // x-or with l
+        // new r
+        return (r, l)
     }
 
     internal func shiftAndCombineKVals(_ left: UInt32, _ right: UInt32, amount: Int = 1) -> UInt64? {
@@ -96,10 +110,44 @@ class DES {
         let r1 = bit8.getBit(3)
         let r2 = bit8.getBit(8)
         let row = (r1 << 1) | r2
-        let column = (bit8 << 3) >> 5
+        // 1234_5678 -> 4567_8000 -> 0004_567
+        let column = (bit8 << 3) >> 4
         let index = (row * 16) + column
         let value = sTable.lookup(Int(index)) as? UInt8
         return value
+    }
+
+    internal func break48Into6Bits(_ bit48: UInt64) -> [UInt8] {
+        var output: [UInt8] = [UInt8]()
+        for i in stride(from: 16, to: 64, by: 6) {
+            let bit4 = UInt8((bit48 << i) >> 58)
+            output.append(bit4)
+        }
+
+        return output
+    }
+
+    internal func sBox(_ bit48: UInt64) -> UInt32 {
+        // split the bit48 into bits of 6
+        var sOut: UInt32 = 0
+        var position: UInt64 = 16 // 64 - 48
+        var shiftAmount: UInt32 = 32
+        for s in 0...7 {
+            var byte: UInt8 = 0
+            for n in 3...8 {
+                var bit = UInt8(bit48.getBit(position))
+                bit = bit << (8 - UInt8(n))
+                byte |= bit
+                position += 1
+            }
+            guard var sComp = sfunction(byte, sTable: DES.S_Tables[s]) else { return 0 }
+            sComp = sComp << (shiftAmount - 1)
+            shiftAmount -= 4
+            sOut |= UInt32(sComp)
+        }
+        // each set of 6 bits, map them into the next sfunction
+        // save them and put them into a new 32bit
+        return sOut
     }
 
     internal var pc1_left: UInt32 {
@@ -310,4 +358,6 @@ extension DES {
         ]
         return BITable(values: table)
     }()
+
+    static let S_Tables: [BITable] = [s1, s2, s3, s4, s5, s6, s7, s8]
 }

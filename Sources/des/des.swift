@@ -128,22 +128,20 @@ class DES {
     }
 
     internal func sBox(_ bit48: UInt64) -> UInt32 {
-        // split the bit48 into bits of 6
         var sOut: UInt32 = 0
-        var position: UInt64 = 16 // 64 - 48
-        var shiftAmount: UInt32 = 32
+        var shiftAmount: UInt32 = 28
+        // 28 24 20 16 12 8 4 0
+        let sBoxInput: [UInt8] = break48Into6Bits(bit48)
         for s in 0...7 {
-            var byte: UInt8 = 0
-            for n in 3...8 {
-                var bit = UInt8(bit48.getBit(position))
-                bit = bit << (8 - UInt8(n))
-                byte |= bit
-                position += 1
-            }
-            guard var sComp = sfunction(byte, sTable: DES.S_Tables[s]) else { return 0 }
-            sComp = sComp << (shiftAmount - 1)
-            shiftAmount -= 4
-            sOut |= UInt32(sComp)
+            let byte: UInt8 = sBoxInput[s]
+            guard let sComp = sfunction(byte, sTable: DES.S_Tables[s]) else {
+                return 0 }
+            var sTemp = UInt32(sComp)
+            // shift each successive sComp left by
+            // need to make sComp a 32 bit number
+            sTemp = sTemp << shiftAmount
+            shiftAmount -=  shiftAmount > 3 ? 4 : 0 // don't break UInt32
+            sOut |= UInt32(sTemp)
         }
         // each set of 6 bits, map them into the next sfunction
         // save them and put them into a new 32bit

@@ -105,13 +105,6 @@ final class desTests: XCTestCase {
         XCTAssertEqual(permuted, 0b0101_1001_1110_1010_0000_0111_1100_0101)
     }
 
-    func test_shouldLoolkupS1Value() throws {
-        let sixBit: UInt8 = 0b00100000 //row 2 column 0 -> 4
-        let sut = DES(key: 0)
-        let s1 = sut.sfunction(sixBit, sTable: DES.s1)
-        XCTAssertEqual(s1, 0b00000100)
-    }
-
     func test_shouldMake32From48WithSVals() throws {
         let bit48: UInt64 = 0b000000_000001_000011_000100_000101_000110_000111_001000
         let sut = DES(key: 0)
@@ -132,12 +125,11 @@ final class desTests: XCTestCase {
         XCTAssertEqual(s6, 15)
         XCTAssertEqual(s7, 7)
         XCTAssertEqual(s8, 6)
-        var sCombo: UInt32 = (UInt32(s1!) << 31) | (UInt32(s2!) << 27) | (UInt32(s3!) << 23) | (UInt32(s4!) << 19)
-        sCombo = sCombo | (UInt32(s5!) << 15) | (UInt32(s6!) << 11) | (UInt32(s7!) << 7) | (UInt32(s8!) << 3)
+        var sCombo: UInt32 = (UInt32(s1!) << 28) | (UInt32(s2!) << 24) | (UInt32(s3!) << 20) | (UInt32(s4!) << 16)
+        sCombo = sCombo | (UInt32(s5!) << 12) | (UInt32(s6!) << 8) | (UInt32(s7!) << 4) | (UInt32(s8!) << 0)
         let sOut = sut.sBox(bit48)
 
         XCTAssertEqual(sOut, sCombo)
-
     }
 
     func test_shouldConvert48_64BitsInto8SectionsOf6() throws {
@@ -195,7 +187,7 @@ final class desTests: XCTestCase {
         let sut = DES(key: badKey)
         sut.setBlock(message)
         let pc1 = sut.pc2List.first!
-        var encrypted = sut.encryptBlock(with: pc1)
+        let encrypted = sut.encryptBlock(with: pc1)
         let val = (UInt64(encrypted.0) << 31) | (UInt64(encrypted.1))
         print(String(val, radix: 16, uppercase: true))
         XCTAssertNotEqual(val, message)
@@ -222,7 +214,7 @@ final class desTests: XCTestCase {
         let exp1 = sut.expansion(split1!.1)
 
         // Combine them
-        var new = combo ^ exp1
+        let new = combo ^ exp1
 
         print(new)
     }

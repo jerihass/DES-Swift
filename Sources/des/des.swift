@@ -15,8 +15,43 @@ class DES {
         messageBlock = block
     }
 
+    internal func shiftAndCombineKVals(_ left: UInt32, _ right: UInt32, amount: Int = 1) -> UInt64? {
+        guard let left = singleLeftshift(left) else { return nil }
+        guard let right = singleLeftshift(right) else { return nil }
+        return combineKVals(UInt64(left), UInt64(right))
+    }
+
+    internal func generatePC2List() -> [UInt64] {
+        var pc2List: [UInt64] = [UInt64]()
+        var kL: UInt32
+        var kR: UInt32
+        kL = pc1_left
+        kR = pc1_right
+        for i in 1...16 {
+            var tempLeft: UInt32
+            var tempRight: UInt32
+            if DES.interationShifts[i] == 2 {
+                tempLeft = doubleLeftshift(kL) ?? 0
+                tempRight = doubleLeftshift(kR) ?? 0
+            } else { // shiftAmount == 1
+                tempLeft = singleLeftshift(kL) ?? 0
+                tempRight = singleLeftshift(kR) ?? 0
+            }
+//            let pc2 = pc2c
+            pc2List.append(0)
+        }
+        return []
+    }
+
+    internal func combineKVals(_ left: UInt64, _ right: UInt64) -> UInt64 {
+        var left = left << 28
+        left = leftCirShift(left)
+        var right = leftCirShift(right)
+        return (left | right)
+    }
+
     internal func genKey() -> UInt64 {
-        let left = UInt64(pc1_left << 24)
+        let left = UInt64(pc1_left << 28)
         let right = UInt64(pc1_right)
         return (left | right)
     }
@@ -94,9 +129,14 @@ class DES {
             var val = UInt64(bit56.getBit(UInt64(Int(location.element) + 8)))
             val = val << (47 - loc)
             pc2 = pc2 | val
-            print("Val: \(val) | PC2: \(String(pc2, radix: 2))")
         }
         return pc2
+    }
+
+    internal func pc2Create(_ left: UInt32, _ right: UInt32) -> UInt64 {
+        var leftShifted:UInt64 = UInt64(left) << 28
+        let combined = leftShifted | UInt64(right)
+        return pc2Create(combined)
     }
 }
 

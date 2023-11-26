@@ -91,7 +91,7 @@ final class desTests: XCTestCase {
         XCTAssertEqual(split.1, 0b0000_0000_0000_0000_0000_0000_0000_0000)
     }
 
-    func test_shouldGetEFrom32BitBlock() throws {
+    func test_shouldGetExpansionFrom32BitBlock() throws {
         let bit32: UInt32 = 0b0101_0101_0101_0101_0101_0101_0101_0101
         let sut = DES(key: 0)
         let ebits = sut.expansion(bit32)
@@ -125,5 +125,62 @@ final class desTests: XCTestCase {
         let sut = DES(key: 0)
         let pc2 = sut.pc2Create(bit56)
         XCTAssertEqual(pc2, 0b011011_101010_110000_011010_101111_001110_011001_000010)
+    }
+
+    func test_shouldPC2FromTwo32Bits() throws {
+        let bit32_L: UInt32 = 0b1010_1010_1010_1010_1010_1010_1010
+        let bit32_R: UInt32 = 0b1010_1010_1010_1010_1010_1010_1010
+        let sut = DES(key: 0)
+        let pc2 = sut.pc2Create(bit32_L, bit32_R)
+        XCTAssertEqual(pc2, 0b011011_101010_110000_011010_101111_001110_011001_000010)
+    }
+
+    func test_shouldShiftAndCombineKVals() throws {
+        let badKey: UInt64 = 0b10 // this is bit 63 -> in right table max value
+        // when shifted goes to farthest bit on right
+        let sut = DES(key: badKey)
+        let combined = sut.shiftAndCombineKVals(sut.pc1_left, sut.pc1_right)
+        XCTAssertEqual(combined, 0b1)
+    }
+
+    func test_shouldGenerateAllPC2s() throws {
+        let badKey: UInt64 = 0b10
+        let sut = DES(key: badKey)
+        let pc2Choices = sut.generatePC2List()
+        XCTAssertEqual(pc2Choices.count, 16)
+    }
+
+    func test_canPerformInitialSetup() throws {
+        let badKey: UInt64 = 0b10
+        let sut = DES(key: badKey)
+        let firstKey = sut.genKey()
+        let pc2 = sut.pc2Create(firstKey)
+        XCTAssertEqual(pc2, 1)
+    }
+
+    func test_shouldXORExpandedAndPC2() throws {
+        let message = "Message!"
+        let badKey: UInt64 = 0b10
+        let sut = DES(key: badKey)
+        
+        // Key stuff
+        var pc_l = sut.pc1_left
+        var pc_r = sut.pc1_right
+
+        pc_l = singleLeftshift(pc_l)!
+        pc_r = singleLeftshift(pc_r)!
+        var combo = sut.combineKVals(UInt64(pc_l), UInt64(pc_r))
+        combo = sut.pc2Create(combo)
+
+        // Message stuff
+        sut.setBlock(message.uint64!)
+        let rs_1 = sut.initialPermutation()
+        let split1 = rs_1?.split()
+        let exp1 = sut.expansion(split1!.1)
+
+        // Combine them
+        var new = combo ^ exp1
+
+        print(new)
     }
 }

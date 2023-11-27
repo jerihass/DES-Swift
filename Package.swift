@@ -8,6 +8,9 @@ let package = Package(
     platforms: [.macOS(.v11)],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
+        .executable(
+            name: "Swift DES",
+            targets: ["Swift DES"]),
         .library(
             name: "des",
             targets: ["des"]),
@@ -17,6 +20,9 @@ let package = Package(
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
             name: "des"),
+        .executableTarget(
+            name: "Swift DES",
+        dependencies: ["des"]),
         .testTarget(
             name: "desTests",
             dependencies: ["des"]),

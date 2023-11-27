@@ -3,26 +3,26 @@
 
 import Foundation
 
-class DES {
+public class DES {
     let key: UInt64
     var messageBlock: UInt64?
     var cypherBlock: UInt64?
     var pc2List: [UInt64]!
 
-    init(key: UInt64) {
+    public init(key: UInt64) {
         self.key = key
         pc2List = generatePC2List()
     }
 
-    func setMessageBlock(_ block: UInt64) {
+    public func setMessageBlock(_ block: UInt64) {
         messageBlock = block
     }
 
-    func setCyperBlock(_ block: UInt64) {
+    public func setCyperBlock(_ block: UInt64) {
         cypherBlock = block
     }
 
-    func encryptBlock() -> UInt64 {
+    public func encryptBlock() -> UInt64 {
         // IP -> Rounds() -> 32bitSwap -> IP -> output
         guard let message = messageBlock else { return 0 }
         let ip = initialPermutation(of: message)
@@ -36,7 +36,7 @@ class DES {
         return inv
     }
 
-    func decryptBlock() -> UInt64 {
+    public func decryptBlock() -> UInt64 {
         guard let cypher = cypherBlock else { return 0 }
         guard let ip = initialPermutation(of: cypher) else { return 0 }
         var round = ip

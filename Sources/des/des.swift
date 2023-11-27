@@ -27,10 +27,9 @@ class DES {
         guard let message = messageBlock else { return 0 }
         let ip = initialPermutation(of: message)
         guard var round = ip else { return 0 }
-        for i in 0...15 {
-            let result = cryptedBlock(input: round, with: pc2List[i])
+        for list in pc2List {
+            let result = cryptedBlock(input: round, with: list)
             round = combine32Bits(result.0, result.1)
-            print(String(round, radix: 16))
         }
         let swapped = swap64(round)
         let inv = inversePermutation(swapped)
@@ -39,23 +38,15 @@ class DES {
 
     func decryptBlock() -> UInt64 {
         guard let cypher = cypherBlock else { return 0 }
-        let ip = initialPermutation(of: cypher)
-        guard var round = ip else { return 0 }
-        for i in 0...15 {
-            let result = cryptedBlock(input: round, with: pc2List[15-i])
+        guard let ip = initialPermutation(of: cypher) else { return 0 }
+        var round = ip
+        for list in pc2List.reversed() {
+            let result = cryptedBlock(input: round, with: list)
             round = combine32Bits(result.0, result.1)
         }
         let swapped = swap64(round)
         let inv = inversePermutation(swapped)
         return inv
-
-        func combine32Bits(_ left: UInt32, _ right: UInt32) -> UInt64 {
-            return (UInt64(left << 32) | UInt64(right))
-        }
-
-        func swap64(_ value: UInt64) -> UInt64 {
-            return (value << 32) | (value >> 32)
-        }
     }
 
     internal func cryptedBlock(input: UInt64, with pc2: UInt64) -> (UInt32, UInt32) {

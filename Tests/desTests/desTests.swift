@@ -195,9 +195,8 @@ final class desTests: XCTestCase {
     }
 
     func test_shouldEncryptAndDecrypt() throws {
-        let aKey: UInt64 = UInt64.random(in: 0...UInt64.max)
         let message: UInt64 = "lock🔐".uint64!//UInt64.random(in: 0...UInt64.max)
-        let sut = DES(vector: aKey)
+        let sut = DES()
         sut.setMessageBlock(message)
         let encrypted = sut.encryptBlock()
         sut.setCyperBlock(encrypted)

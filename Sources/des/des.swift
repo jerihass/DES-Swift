@@ -9,7 +9,7 @@ public class DES {
     var cypherBlock: UInt64?
     var pc2List: [UInt64]!
 
-    public init(vector: UInt64) {
+    public init(vector: UInt64 = UInt64.random(in: 0...UInt64.max)) {
         self.key = vector
         pc2List = generatePC2List()
     }

@@ -186,25 +186,25 @@ final class desTests: XCTestCase {
         XCTAssertNotEqual(val, message)
     }
 
-    func test_shouldEncryptAndDecrypt() throws {
-        let aKey: UInt64 = UInt64.random(in: 0...UInt64.max)
-        let message: UInt64 = "Message!".uint64!
-        let sut = DES(key: aKey)
-        sut.setMessageBlock(message)
-        let encrypted = sut.encryptBlock()
-        print("Encrypted: " + String(encrypted, radix: 16))
-        sut.setCyperBlock(encrypted)
-        let decrypted = sut.decryptBlock()
-        XCTAssertNotEqual(encrypted, 0)
-        XCTAssertNotEqual(decrypted, 0)
-        XCTAssertEqual(message, decrypted)
-    }
-
     func test_shouldDoInversePerm() throws {
         // all even bits from left are 1
         let bit64: UInt64 = 0x5555555555555555
         let sut = DES(key: 0)
         let ip = sut.inversePermutation(bit64)
         XCTAssertEqual(ip, 0b11111111_00000000_11111111_00000000_11111111_00000000_11111111_00000000)
+    }
+
+    func test_shouldEncryptAndDecrypt() throws {
+        let aKey: UInt64 = UInt64.random(in: 0...UInt64.max)
+        let message: UInt64 = "lock🔐".uint64!//UInt64.random(in: 0...UInt64.max)
+        let sut = DES(key: aKey)
+        sut.setMessageBlock(message)
+        let encrypted = sut.encryptBlock()
+        sut.setCyperBlock(encrypted)
+        let decrypted = sut.decryptBlock()
+        XCTAssertNotEqual(encrypted, 0)
+        XCTAssertNotEqual(decrypted, 0)
+        XCTAssertEqual(message, decrypted)
+        print("Message: \(String(message))\nEncrypted: \(String(encrypted, radix: 16)) \nDecrypted: \(String(decrypted))")
     }
 }

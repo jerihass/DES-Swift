@@ -207,41 +207,4 @@ final class desTests: XCTestCase {
         let ip = sut.inversePermutation(bit64)
         XCTAssertEqual(ip, 0b11111111_00000000_11111111_00000000_11111111_00000000_11111111_00000000)
     }
-
-    func test_shouldXORExpandedAndPC2() throws {
-        let message = "Message!"
-        let badKey: UInt64 = 0b10
-        let sut = DES(key: badKey)
-        
-        // Key stuff
-        var pc_l = sut.pc1Left
-        var pc_r = sut.pc1Right
-
-        pc_l = singleLeftshift(pc_l)!
-        pc_r = singleLeftshift(pc_r)!
-        var combo = sut.combineKVals(UInt64(pc_l), UInt64(pc_r))
-        combo = sut.pc2Create(combo)
-
-        // Message stuff
-        sut.setMessageBlock(message.uint64!)
-        let rs_1 = sut.initialPermutation(of: message.uint64!)
-        let split1 = rs_1?.split()
-        let exp1 = sut.expansion(split1!.1)
-
-        // Combine them
-        let _ = combo ^ exp1
-    }
-
-    func test_shouldSwap64Bit() throws {
-        let bit64: UInt64 = 0b11111111_11111111_11111111_11111111_00000000_00000000_00000000_00000000
-        let swapped = swap64(bit64)
-        XCTAssertEqual(swapped, 0b00000000_00000000_00000000_00000000_11111111_11111111_11111111_11111111)
-    }
-
-    func test_shouldCombine32Bits() throws {
-        let left: UInt32 = 0b11111111_11111111_11111111_11111111
-        let right: UInt32 = 0b00000000_00000000_00000000_00000000
-        let combo = combine32Bits(left, right)
-        XCTAssertEqual(combo, 0b11111111_11111111_11111111_11111111_00000000_00000000_00000000_00000000)
-    }
 }

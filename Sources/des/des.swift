@@ -4,7 +4,7 @@
 import Foundation
 
 public class DES {
-    let key: UInt64
+    public let key: UInt64
     var messageBlock: UInt64?
     var cypherBlock: UInt64?
     var pc2List: [UInt64]!

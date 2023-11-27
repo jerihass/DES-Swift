@@ -195,7 +195,7 @@ final class desTests: XCTestCase {
     }
 
     func test_shouldEncryptAndDecrypt() throws {
-        let message: UInt64 = "lock🔐".uint64!//UInt64.random(in: 0...UInt64.max)
+        let message: UInt64 = "lock🔐".uint64!
         let sut = DES()
         sut.setMessageBlock(message)
         let encrypted = sut.encryptBlock()
@@ -204,6 +204,6 @@ final class desTests: XCTestCase {
         XCTAssertNotEqual(encrypted, 0)
         XCTAssertNotEqual(decrypted, 0)
         XCTAssertEqual(message, decrypted)
-        print("Message: \(String(message))\nEncrypted: \(String(encrypted, radix: 16)) \nDecrypted: \(String(decrypted))")
+//   print("Message: \(String(message))\nEncrypted: \(String(encrypted, radix: 16)) \nDecrypted: \(String(decrypted))")
     }
 }

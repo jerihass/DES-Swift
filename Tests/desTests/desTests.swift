@@ -193,6 +193,24 @@ final class desTests: XCTestCase {
         XCTAssertNotEqual(val, message)
     }
 
+    func test_shouldDo16RoundMutation() throws {
+        let badKey: UInt64 = 0b10
+        let message: UInt64 = "Message!".uint64!
+        let sut = DES(key: badKey)
+        sut.setBlock(message)
+        let pc1 = sut.pc2List.first!
+        let encrypted = sut.encryptMessage()
+        XCTAssertEqual(encrypted, 0)
+    }
+
+    func test_shouldDoInversePerm() throws {
+        // all even bits from left are 1
+        let bit64: UInt64 = 0x5555555555555555
+        let sut = DES(key: 0)
+        let ip = sut.inversePermutation(bit64)
+        XCTAssertEqual(ip, 0b11111111_00000000_11111111_00000000_11111111_00000000_11111111_00000000)
+    }
+
     func test_shouldXORExpandedAndPC2() throws {
         let message = "Message!"
         let badKey: UInt64 = 0b10

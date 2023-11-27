@@ -16,6 +16,28 @@ class DES {
         messageBlock = block
     }
 
+    func encryptMessage() -> UInt64 {
+        // IP -> Rounds() -> 32bitSwap -> IP -> output
+        let ip = initialPermutation()
+        guard var round = ip else { return 0 }
+        for i in 0...15 {
+
+            let result = encryptBlock(with: round)
+            round = combine32Bits(result.0, result.1)
+        }
+        let swapped = swap64(round)
+
+        return round
+
+        func combine32Bits(_ left: UInt32, _ right: UInt32) -> UInt64 {
+            return (UInt64(left << 32) | UInt64(right))
+        }
+
+        func swap64(_ value: UInt64) -> UInt64 {
+            return (value << 32) | (value >> 32)
+        }
+    }
+
     internal func encryptBlock(with pc2: UInt64) -> (UInt32, UInt32) {
         guard let l = messageBlock?.split().0 else { return (0,0) }
         guard let r = messageBlock?.split().1 else { return (0,0) }
@@ -23,10 +45,16 @@ class DES {
         let rExp = expansion(r)
         let xOR = rExp ^ pc2
         // do s-box stuff
+        let sOut = sBox(xOR)
+
         // permutate
+        let permutation = permutate(sOut)
+
         // x-or with l
+        let xOR2 = permutation ^ l
+
         // new r
-        return (r, l)
+        return (r, xOR2)
     }
 
     internal func shiftAndCombineKVals(_ left: UInt32, _ right: UInt32, amount: Int = 1) -> UInt64? {
@@ -96,14 +124,14 @@ class DES {
     }
 
     internal func permutate(_ bit32: UInt32) -> UInt32 {
-        var pc1: UInt32 = 0
+        var out32: UInt32 = 0
         for location in DES.p.values.enumerated() {
             let loc = UInt32(location.offset)
             var val = UInt32(bit32.getBit(UInt32(location.element)))
             val = val << (31 - loc)
-            pc1 = pc1 | val
+            out32 = out32 | val
         }
-        return pc1
+        return out32
     }
 
     internal func sfunction(_ bit8: UInt8, sTable: BITable ) -> UInt8? {
@@ -132,9 +160,9 @@ class DES {
         var shiftAmount: UInt32 = 28
         // 28 24 20 16 12 8 4 0
         let sBoxInput: [UInt8] = break48Into6Bits(bit48)
-        for s in 0...7 {
-            let byte: UInt8 = sBoxInput[s]
-            guard let sComp = sfunction(byte, sTable: DES.S_Tables[s]) else {
+        for box in sBoxInput.enumerated() {
+            let byte: UInt8 = box.element
+            guard let sComp = sfunction(byte, sTable: DES.S_Tables[box.offset]) else {
                 return 0 }
             var sTemp = UInt32(sComp)
             // shift each successive sComp left by
@@ -146,6 +174,17 @@ class DES {
         // each set of 6 bits, map them into the next sfunction
         // save them and put them into a new 32bit
         return sOut
+    }
+
+    internal func inversePermutation(_ bit64: UInt64) -> UInt64 {
+        var output: UInt64 = 0
+        for location in DES.ip_inv.values.enumerated() {
+            let loc = UInt64(location.offset)
+            var val = UInt64(bit64.getBit(UInt64(location.element)))
+            val = (val << (63 - loc))
+            output = output | val
+        }
+        return output
     }
 
     internal var pc1_left: UInt32 {

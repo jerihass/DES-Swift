@@ -6,6 +6,7 @@ import Foundation
 class DES {
     let key: UInt64
     var messageBlock: UInt64?
+    var cypherBlock: UInt64?
     lazy var pc2List: [UInt64] = { generatePC2List() }()
 
     init(key: UInt64) {
@@ -16,18 +17,36 @@ class DES {
         messageBlock = block
     }
 
-    func encryptMessage() -> UInt64 {
+    func setCyperBlock(_ block: UInt64) {
+        cypherBlock = block
+    }
+
+    func encryptBlock() -> UInt64 {
         // IP -> Rounds() -> 32bitSwap -> IP -> output
-        let ip = initialPermutation()
+        guard let message = messageBlock else { return 0 }
+        let ip = initialPermutation(of: message)
         guard var round = ip else { return 0 }
         for i in 0...15 {
-
-            let result = encryptBlock(with: round)
+            let result = cryptedBlock(input: round, with: pc2List[i])
             round = combine32Bits(result.0, result.1)
         }
         let swapped = swap64(round)
+        let inv = inversePermutation(swapped)
+        return inv
 
-        return round
+    }
+
+    func decryptBlock() -> UInt64 {
+        guard let cypher = cypherBlock else { return 0 }
+        let ip = initialPermutation(of: cypher)
+        guard var round = ip else { return 0 }
+        for i in 0...15 {
+            let result = cryptedBlock(input: round, with: pc2List[15-i])
+            round = combine32Bits(result.0, result.1)
+        }
+        let swapped = swap64(round)
+        let inv = inversePermutation(swapped)
+        return inv
 
         func combine32Bits(_ left: UInt32, _ right: UInt32) -> UInt64 {
             return (UInt64(left << 32) | UInt64(right))
@@ -38,9 +57,9 @@ class DES {
         }
     }
 
-    internal func encryptBlock(with pc2: UInt64) -> (UInt32, UInt32) {
-        guard let l = messageBlock?.split().0 else { return (0,0) }
-        guard let r = messageBlock?.split().1 else { return (0,0) }
+    internal func cryptedBlock(input: UInt64, with pc2: UInt64) -> (UInt32, UInt32) {
+        let l = input.split().0
+        let r = input.split().1
 
         let rExp = expansion(r)
         let xOR = rExp ^ pc2
@@ -100,12 +119,11 @@ class DES {
         return (left | right)
     }
 
-    internal func initialPermutation() -> UInt64? {
-        guard let message = messageBlock else { return nil }
+    internal func initialPermutation(of block: UInt64) -> UInt64? {
         var pc1: UInt64 = 0
         for location in DES.ip.values.enumerated() {
             let loc = UInt64(location.offset)
-            var val = UInt64(message.getBit(UInt64(location.element)))
+            var val = UInt64(block.getBit(UInt64(location.element)))
             val = (val << (63 - loc))
             pc1 = pc1 | val
         }

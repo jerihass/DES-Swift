@@ -67,6 +67,13 @@ func doubleLeftshift(_ value: UInt32, bitPosition: Int = 28) -> UInt32? {
     return singleLeftshift(value)
 }
 
+func swap64(_ value: UInt64) -> UInt64 {
+    return (value << 32) | (value >> 32)
+}
+
+func combine32Bits(_ left: UInt32, _ right: UInt32) -> UInt64 {
+    return (UInt64(UInt64(left) << 32) | UInt64(right))
+}
 
 func leftCirShift(_ bits: UInt64, by: Int = 0) -> UInt64 {
     var shift: UInt64 = 0

@@ -83,7 +83,7 @@ final class desTests: XCTestCase {
 
         let sut = DES(key: binaryKey)
         sut.setBlock(binaryMessage)
-        let ip = try XCTUnwrap(sut.initialPermutation())
+        let ip = try XCTUnwrap(sut.initialPermutation(of: binaryMessage))
         XCTAssertEqual(ip, 0b1111_1111_1111_1111_1111_1111_1111_1111_0000_0000_0000_0000_0000_0000_0000_0000)
 
         let split = ip.split()
@@ -187,20 +187,23 @@ final class desTests: XCTestCase {
         let sut = DES(key: badKey)
         sut.setBlock(message)
         let pc1 = sut.pc2List.first!
-        let encrypted = sut.encryptBlock(with: pc1)
+        let encrypted = sut.cryptedBlock(input: message, with: pc1)
         let val = (UInt64(encrypted.0) << 31) | (UInt64(encrypted.1))
         print(String(val, radix: 16, uppercase: true))
         XCTAssertNotEqual(val, message)
     }
 
-    func test_shouldDo16RoundMutation() throws {
-        let badKey: UInt64 = 0b10
+    func test_shouldDo16RoundMutationAndEncryption() throws {
+        let badKey: UInt64 = 0b10110110101000101
         let message: UInt64 = "Message!".uint64!
         let sut = DES(key: badKey)
         sut.setBlock(message)
-        let pc1 = sut.pc2List.first!
-        let encrypted = sut.encryptMessage()
-        XCTAssertEqual(encrypted, 0)
+        let encrypted = sut.encryptBlock()
+        sut.setCyperBlock(encrypted)
+        let decrypted = sut.decryptBlock()
+        XCTAssertNotEqual(encrypted, 0)
+        XCTAssertNotEqual(decrypted, 0)
+        XCTAssertEqual(String(message), String(decrypted))
     }
 
     func test_shouldDoInversePerm() throws {
@@ -227,7 +230,7 @@ final class desTests: XCTestCase {
 
         // Message stuff
         sut.setBlock(message.uint64!)
-        let rs_1 = sut.initialPermutation()
+        let rs_1 = sut.initialPermutation(of: message.uint64!)
         let split1 = rs_1?.split()
         let exp1 = sut.expansion(split1!.1)
 
@@ -235,5 +238,18 @@ final class desTests: XCTestCase {
         let new = combo ^ exp1
 
         print(new)
+    }
+
+    func test_shouldSwap64Bit() throws {
+        let bit64: UInt64 = 0b11111111_11111111_11111111_11111111_00000000_00000000_00000000_00000000
+        let swapped = swap64(bit64)
+        XCTAssertEqual(swapped, 0b00000000_00000000_00000000_00000000_11111111_11111111_11111111_11111111)
+    }
+
+    func test_shouldCombine32Bits() throws {
+        let left: UInt32 = 0b11111111_11111111_11111111_11111111
+        let right: UInt32 = 0b00000000_00000000_00000000_00000000
+        let combo = combine32Bits(left, right)
+        XCTAssertEqual(combo, 0b11111111_11111111_11111111_11111111_00000000_00000000_00000000_00000000)
     }
 }

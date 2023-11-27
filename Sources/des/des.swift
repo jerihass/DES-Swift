@@ -7,10 +7,11 @@ class DES {
     let key: UInt64
     var messageBlock: UInt64?
     var cypherBlock: UInt64?
-    lazy var pc2List: [UInt64] = { generatePC2List() }()
+    var pc2List: [UInt64]!
 
     init(key: UInt64) {
         self.key = key
+        pc2List = generatePC2List()
     }
 
     func setBlock(_ block: UInt64) {
@@ -58,11 +59,12 @@ class DES {
     }
 
     internal func cryptedBlock(input: UInt64, with pc2: UInt64) -> (UInt32, UInt32) {
-        let l = input.split().0
-        let r = input.split().1
+        let left = input.split().0
+        let right = input.split().1
 
-        let rExp = expansion(r)
+        let rExp = expansion(right)
         let xOR = rExp ^ pc2
+
         // do s-box stuff
         let sOut = sBox(xOR)
 
@@ -70,10 +72,10 @@ class DES {
         let permutation = permutate(sOut)
 
         // x-or with l
-        let xOR2 = permutation ^ l
+        let xOR2 = permutation ^ left
 
         // new r
-        return (r, xOR2)
+        return (right, xOR2)
     }
 
     internal func shiftAndCombineKVals(_ left: UInt32, _ right: UInt32, amount: Int = 1) -> UInt64? {
@@ -83,39 +85,38 @@ class DES {
     }
 
     internal func generatePC2List() -> [UInt64] {
-        var pc2List: [UInt64] = [UInt64]()
+        var list: [UInt64] = [UInt64]()
         var kL: UInt32
         var kR: UInt32
-        kL = pc1_left
-        kR = pc1_right
+        kL = pc1Left
+        kR = pc1Right
         for i in 1...16 {
             var tempLeft: UInt32
             var tempRight: UInt32
-            if DES.interationShifts[i] == 2 {
+            if DES.iterationShifts[i] == 2 {
                 tempLeft = doubleLeftshift(kL) ?? 0
                 tempRight = doubleLeftshift(kR) ?? 0
-            } else { // shiftAmount == 1
+            } else {
                 tempLeft = singleLeftshift(kL) ?? 0
                 tempRight = singleLeftshift(kR) ?? 0
             }
-            let pc2 = pc2Create(tempLeft, tempRight)
-            pc2List.append(pc2)
+            list.append(pc2Create(tempLeft, tempRight))
             kL = tempLeft
             kR = tempRight
         }
-        return pc2List
+        return list
     }
 
     internal func combineKVals(_ left: UInt64, _ right: UInt64) -> UInt64 {
         var left = left << 28
         left = leftCirShift(left)
-        var right = leftCirShift(right)
+        let right = leftCirShift(right)
         return (left | right)
     }
 
     internal func genKey() -> UInt64 {
-        let left = UInt64(pc1_left << 28)
-        let right = UInt64(pc1_right)
+        let left = UInt64(pc1Left << 28)
+        let right = UInt64(pc1Right)
         return (left | right)
     }
 
@@ -205,7 +206,7 @@ class DES {
         return output
     }
 
-    internal var pc1_left: UInt32 {
+    internal var pc1Left: UInt32 {
         var pc1: UInt32 = 0
         for location in DES.pc1_left.values.enumerated() {
             let loc = UInt32(location.offset)
@@ -216,7 +217,7 @@ class DES {
         return pc1
     }
 
-    internal var pc1_right: UInt32 {
+    internal var pc1Right: UInt32 {
         var pc1: UInt32 = 0
         for location in DES.pc1_right.values.enumerated() {
             let loc = UInt32(location.offset)
@@ -239,14 +240,14 @@ class DES {
     }
 
     internal func pc2Create(_ left: UInt32, _ right: UInt32) -> UInt64 {
-        var leftShifted:UInt64 = UInt64(left) << 28
+        let leftShifted:UInt64 = UInt64(left) << 28
         let combined = leftShifted | UInt64(right)
         return pc2Create(combined)
     }
 }
 
 extension DES {
-    static let interationShifts = {
+    static let iterationShifts = {
         var dict: [Int:Int] = [:]
         dict[1] = 1
         dict[2] = 1

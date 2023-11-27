@@ -54,18 +54,16 @@ final class desTests: XCTestCase {
 
     func test_shouldPC1OfKey() throws {
         var sut = DES(key: testBits)
-        var pc1 = sut.pc1_left
+        var pc1 = sut.pc1Left
         XCTAssertEqual(pc1, 0b0000111100001111000011110000)
 
-        pc1 = sut.pc1_right
+        pc1 = sut.pc1Right
         XCTAssertEqual(pc1, 0b0000111100001111000011111111)
 
         let testKey = "TestKeys"
         sut = DES(key: testKey.uint64!)
-        pc1 = sut.pc1_left
-        print(pc1)
-        pc1 = sut.pc1_right
-        print(pc1)
+        pc1 = sut.pc1Left
+        pc1 = sut.pc1Right
     }
 
     func test_shouldConvert64BitStringToUInt64() throws {
@@ -143,7 +141,6 @@ final class desTests: XCTestCase {
         let key64 = UInt64.random(in: 0...UInt64.max)
         let sut = DES(key: key64)
         let key48 = sut.genKey()
-        print(key48)
         XCTAssertNotEqual(key48, 0)
     }
 
@@ -166,7 +163,7 @@ final class desTests: XCTestCase {
         let badKey: UInt64 = 0b10 // this is bit 63 -> in right table max value
         // when shifted goes to farthest bit on right
         let sut = DES(key: badKey)
-        let combined = sut.shiftAndCombineKVals(sut.pc1_left, sut.pc1_right)
+        let combined = sut.shiftAndCombineKVals(sut.pc1Left, sut.pc1Right)
         XCTAssertEqual(combined, 0b1)
     }
 
@@ -175,10 +172,7 @@ final class desTests: XCTestCase {
         let sut = DES(key: badKey)
         let pc2Choices = sut.generatePC2List()
         XCTAssertEqual(pc2Choices.count, 16)
-        for pc2Choice in pc2Choices {
-            let stringbytes = Array(pc2Choice.description.utf8CString)
-            print(stringbytes)
-        }
+//        XCTAssertEqual(pc2Choices, )
     }
 
     func test_shouldDoSingleRoundMutation() throws {
@@ -188,17 +182,17 @@ final class desTests: XCTestCase {
         sut.setBlock(message)
         let pc1 = sut.pc2List.first!
         let encrypted = sut.cryptedBlock(input: message, with: pc1)
-        let val = (UInt64(encrypted.0) << 31) | (UInt64(encrypted.1))
-        print(String(val, radix: 16, uppercase: true))
+        let val = combine32Bits(encrypted.0, encrypted.1)
         XCTAssertNotEqual(val, message)
     }
 
-    func test_shouldDo16RoundMutationAndEncryption() throws {
-        let badKey: UInt64 = 0b10110110101000101
-        let message: UInt64 = "Message!".uint64!
+    func test_shouldEncryptAndDecrypt() throws {
+        let badKey: UInt64 = UInt64.random(in: 0...UInt64.max)
+        let message: UInt64 = "Messages".uint64!
         let sut = DES(key: badKey)
         sut.setBlock(message)
         let encrypted = sut.encryptBlock()
+        print(String(encrypted, radix: 16))
         sut.setCyperBlock(encrypted)
         let decrypted = sut.decryptBlock()
         XCTAssertNotEqual(encrypted, 0)
@@ -220,8 +214,8 @@ final class desTests: XCTestCase {
         let sut = DES(key: badKey)
         
         // Key stuff
-        var pc_l = sut.pc1_left
-        var pc_r = sut.pc1_right
+        var pc_l = sut.pc1Left
+        var pc_r = sut.pc1Right
 
         pc_l = singleLeftshift(pc_l)!
         pc_r = singleLeftshift(pc_r)!
@@ -235,9 +229,7 @@ final class desTests: XCTestCase {
         let exp1 = sut.expansion(split1!.1)
 
         // Combine them
-        let new = combo ^ exp1
-
-        print(new)
+        let _ = combo ^ exp1
     }
 
     func test_shouldSwap64Bit() throws {

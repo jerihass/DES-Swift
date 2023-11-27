@@ -9,8 +9,8 @@ public class DES {
     var cypherBlock: UInt64?
     var pc2List: [UInt64]!
 
-    public init(key: UInt64) {
-        self.key = key
+    public init(vector: UInt64) {
+        self.key = vector
         pc2List = generatePC2List()
     }
 

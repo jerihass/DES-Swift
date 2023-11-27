@@ -8,7 +8,7 @@
 import Foundation
 import des
 
-let des = DES(key: 0)
+let des = DES(vector: 0)
 des.setCyperBlock(0)
 des.setMessageBlock(0)
 let val = des.encryptBlock()

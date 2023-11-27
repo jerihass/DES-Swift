@@ -80,7 +80,7 @@ final class desTests: XCTestCase {
         let binaryKey = try XCTUnwrap(key.uint64)
 
         let sut = DES(key: binaryKey)
-        sut.setBlock(binaryMessage)
+        sut.setMessageBlock(binaryMessage)
         let ip = try XCTUnwrap(sut.initialPermutation(of: binaryMessage))
         XCTAssertEqual(ip, 0b1111_1111_1111_1111_1111_1111_1111_1111_0000_0000_0000_0000_0000_0000_0000_0000)
 
@@ -179,7 +179,7 @@ final class desTests: XCTestCase {
         let badKey: UInt64 = 0b10
         let message: UInt64 = "Message!".uint64!
         let sut = DES(key: badKey)
-        sut.setBlock(message)
+        sut.setMessageBlock(message)
         let pc1 = sut.pc2List.first!
         let encrypted = sut.cryptedBlock(input: message, with: pc1)
         let val = combine32Bits(encrypted.0, encrypted.1)
@@ -187,17 +187,17 @@ final class desTests: XCTestCase {
     }
 
     func test_shouldEncryptAndDecrypt() throws {
-        let badKey: UInt64 = UInt64.random(in: 0...UInt64.max)
-        let message: UInt64 = "Messages".uint64!
-        let sut = DES(key: badKey)
-        sut.setBlock(message)
+        let aKey: UInt64 = 0x8001010101010101// UInt64.random(in: 0...UInt64.max)
+        let message: UInt64 = 0
+        let sut = DES(key: aKey)
+        sut.setMessageBlock(message)
         let encrypted = sut.encryptBlock()
         print(String(encrypted, radix: 16))
         sut.setCyperBlock(encrypted)
         let decrypted = sut.decryptBlock()
         XCTAssertNotEqual(encrypted, 0)
         XCTAssertNotEqual(decrypted, 0)
-        XCTAssertEqual(String(message), String(decrypted))
+        XCTAssertEqual(message, decrypted)
     }
 
     func test_shouldDoInversePerm() throws {
@@ -223,7 +223,7 @@ final class desTests: XCTestCase {
         combo = sut.pc2Create(combo)
 
         // Message stuff
-        sut.setBlock(message.uint64!)
+        sut.setMessageBlock(message.uint64!)
         let rs_1 = sut.initialPermutation(of: message.uint64!)
         let split1 = rs_1?.split()
         let exp1 = sut.expansion(split1!.1)

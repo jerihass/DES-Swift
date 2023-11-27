@@ -14,7 +14,7 @@ class DES {
         pc2List = generatePC2List()
     }
 
-    func setBlock(_ block: UInt64) {
+    func setMessageBlock(_ block: UInt64) {
         messageBlock = block
     }
 
@@ -30,11 +30,11 @@ class DES {
         for i in 0...15 {
             let result = cryptedBlock(input: round, with: pc2List[i])
             round = combine32Bits(result.0, result.1)
+            print(String(round, radix: 16))
         }
         let swapped = swap64(round)
         let inv = inversePermutation(swapped)
         return inv
-
     }
 
     func decryptBlock() -> UInt64 {
@@ -280,7 +280,7 @@ extension DES {
         return BITable(values: table)}()
 
     static let ip_inv: BITable = {
-        let table: [UInt8] = [40, 8, 48, 16, 56, 14, 64, 32,
+        let table: [UInt8] = [40, 8, 48, 16, 56, 24, 64, 32,
                               39, 7, 47, 15, 55, 23, 63, 31,
                               38, 6, 46, 14, 54, 22, 62, 30,
                               37, 5, 45, 13, 53, 21, 61, 29,
@@ -371,7 +371,7 @@ extension DES {
             7, 13, 14, 3, 0, 6, 9, 10, 1, 2, 8, 5, 11, 12, 4, 15,
             13, 8, 11, 5, 6, 15, 0, 3, 4, 7, 2, 12, 1, 10, 14, 9,
             10, 6, 9, 0, 12, 11, 7, 13, 15, 1, 3, 14, 5, 2, 8, 4,
-            3, 1, 5, 0, 6, 10, 1, 13, 8, 9, 4, 5, 11, 12, 7, 2, 14]
+            3, 15, 0, 6, 10, 1, 13, 8, 9, 4, 5, 11, 12, 7, 2, 14]
         return BITable(values: table)
     }()
 

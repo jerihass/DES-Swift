@@ -14,6 +14,62 @@ public class DES {
         pc2List = generatePC2List()
     }
 
+    public func encrypt(_ stringData: Data) -> Data? {
+        let blockCount = stringData.count / 8
+        var cypherData: Data = Data()
+
+        for index in 0..<blockCount {
+            let blockIndex = index * DES.blockSize
+            let stringBlock = stringData.subdata(in: blockIndex..<(blockIndex + DES.blockSize))
+            let block: UInt64 = stringBlock.withUnsafeBytes({ pointer in
+                pointer.load(as: UInt64.self)
+            })
+
+            setMessageBlock(block)
+            let cypherBlock = encryptBlock()
+
+            var byteArray: [UInt8] = Array(repeating: 0, count: MemoryLayout<UInt64>.size)
+            withUnsafeBytes(of: cypherBlock) { rawBufferPointer in
+                if let baseAddress = rawBufferPointer.baseAddress {
+                    byteArray.withUnsafeMutableBytes { mutableRawBufferPointer in
+                        mutableRawBufferPointer.copyMemory(from: UnsafeRawBufferPointer(start: baseAddress, count: MemoryLayout<UInt64>.size))
+                    }
+                }
+            }
+            cypherData.append(contentsOf:byteArray)
+        }
+
+        return cypherData
+    }
+
+    public func decrypt(_ cypherData: Data) -> Data? {
+        let blockCount = cypherData.count / 8
+        var stringData: Data = Data()
+
+        for index in 0..<blockCount {
+            let blockIndex = index * DES.blockSize
+            let cypherBlock = cypherData.subdata(in: blockIndex..<(blockIndex + DES.blockSize))
+            let block: UInt64 = cypherBlock.withUnsafeBytes({ pointer in
+                pointer.load(as: UInt64.self)
+            })
+
+            setCyperBlock(block)
+            let stringBlock = decryptBlock()
+
+            var byteArray: [UInt8] = Array(repeating: 0, count: MemoryLayout<UInt64>.size)
+            withUnsafeBytes(of: stringBlock) { rawBufferPointer in
+                if let baseAddress = rawBufferPointer.baseAddress {
+                    byteArray.withUnsafeMutableBytes { mutableRawBufferPointer in
+                        mutableRawBufferPointer.copyMemory(from: UnsafeRawBufferPointer(start: baseAddress, count: MemoryLayout<UInt64>.size))
+                    }
+                }
+            }
+            stringData.append(contentsOf:byteArray)
+        }
+
+        return stringData
+    }
+
     public func setMessageBlock(_ block: UInt64) {
         messageBlock = block
     }

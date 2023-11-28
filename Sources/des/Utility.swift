@@ -14,3 +14,13 @@ func pad(string: String, amount: Int) -> Data? {
     }
     return data
 }
+
+func unpad(data: Data) -> String {
+    guard let lastByte = data.last else { return "" }
+    if (lastByte > 0 && lastByte < 8) {
+        var actual = data.dropLast(Int(lastByte)).compactMap({UInt8($0)})
+        actual.append(UInt8())
+        return String(cString: actual)
+    }
+    return ""
+}

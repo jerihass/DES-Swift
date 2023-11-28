@@ -204,6 +204,13 @@ final class desTests: XCTestCase {
         XCTAssertNotEqual(encrypted, 0)
         XCTAssertNotEqual(decrypted, 0)
         XCTAssertEqual(message, decrypted)
-//   print("Message: \(String(message))\nEncrypted: \(String(encrypted, radix: 16)) \nDecrypted: \(String(decrypted))")
+    }
+
+    func test_shouldEncryptDecrypt() throws {
+        let message = "This is a message also!"
+        let sut = DES()
+        let cypherText = sut.encrypt(pad(string: message, amount: DES.blockSize)!)!
+        let decrypted = unpad(data: sut.decrypt(cypherText)!)
+        XCTAssertEqual(decrypted, message)
     }
 }

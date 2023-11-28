@@ -114,3 +114,11 @@ struct BITable {
         return values[index]
     }
 }
+
+extension UInt64 {
+    init(_ block: Data) {
+        self = block.withUnsafeBytes({ pointer in
+            pointer.load(as: UInt64.self)
+        })
+    }
+}

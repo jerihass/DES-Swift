@@ -21,11 +21,11 @@ public class DES {
         for index in 0..<blockCount {
             let blockIndex = index * DES.blockSize
             let stringBlock = stringData.subdata(in: blockIndex..<(blockIndex + DES.blockSize))
-            let block: UInt64 = stringBlock.withUnsafeBytes({ pointer in
-                pointer.load(as: UInt64.self)
-            })
+            let block: UInt64 = UInt64(stringBlock)
+
             setMessageBlock(block)
             let cypherBlock = encryptBlock()
+
             let byteArray = convertToByteArray(cypherBlock)
             cypherData.append(contentsOf:byteArray)
         }
@@ -40,11 +40,11 @@ public class DES {
         for index in 0..<blockCount {
             let blockIndex = index * DES.blockSize
             let cypherBlock = cypherData.subdata(in: blockIndex..<(blockIndex + DES.blockSize))
-            let block: UInt64 = cypherBlock.withUnsafeBytes({ pointer in
-                pointer.load(as: UInt64.self)
-            })
+            let block: UInt64 = UInt64(cypherBlock)
+
             setCyperBlock(block)
             let stringBlock = decryptBlock()
+
             let byteArray = convertToByteArray(stringBlock)
             stringData.append(contentsOf:byteArray)
         }
@@ -52,15 +52,36 @@ public class DES {
         return stringData
     }
 
-    public func setMessageBlock(_ block: UInt64) {
+    internal func crypt(_ inData: Data, setBlock: (_ block: UInt64)->Void, transform: ()->UInt64 ) -> Data {
+        let blockCount = inData.count / 8
+        var outData: Data = Data()
+
+        for index in 0..<blockCount {
+            let blockIndex = index * DES.blockSize
+            let inBlock = inData.subdata(in: blockIndex..<(blockIndex + DES.blockSize))
+            let block: UInt64 = UInt64(inBlock)
+
+            //
+            setBlock(block)
+            let stringBlock = transform()
+            //
+
+            let byteArray = convertToByteArray(stringBlock)
+            outData.append(contentsOf:byteArray)
+        }
+
+        return outData
+    }
+
+    internal func setMessageBlock(_ block: UInt64) {
         messageBlock = block
     }
 
-    public func setCyperBlock(_ block: UInt64) {
+    internal func setCyperBlock(_ block: UInt64) {
         cypherBlock = block
     }
 
-    public func encryptBlock() -> UInt64 {
+    internal func encryptBlock() -> UInt64 {
         // IP -> Rounds() -> 32bitSwap -> IP -> output
         guard let message = messageBlock else { return 0 }
         let ip = initialPermutation(of: message)
@@ -74,7 +95,7 @@ public class DES {
         return inv
     }
 
-    public func decryptBlock() -> UInt64 {
+    internal func decryptBlock() -> UInt64 {
         guard let cypher = cypherBlock else { return 0 }
         guard let ip = initialPermutation(of: cypher) else { return 0 }
         var round = ip

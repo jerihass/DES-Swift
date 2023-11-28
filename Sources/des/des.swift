@@ -15,41 +15,11 @@ public class DES {
     }
 
     public func encrypt(_ stringData: Data) -> Data? {
-        let blockCount = stringData.count / 8
-        var cypherData: Data = Data()
-
-        for index in 0..<blockCount {
-            let blockIndex = index * DES.blockSize
-            let stringBlock = stringData.subdata(in: blockIndex..<(blockIndex + DES.blockSize))
-            let block: UInt64 = UInt64(stringBlock)
-
-            setMessageBlock(block)
-            let cypherBlock = encryptBlock()
-
-            let byteArray = convertToByteArray(cypherBlock)
-            cypherData.append(contentsOf:byteArray)
-        }
-
-        return cypherData
+        return crypt(stringData, setBlock: setMessageBlock, transform: encryptBlock)
     }
 
     public func decrypt(_ cypherData: Data) -> Data? {
-        let blockCount = cypherData.count / 8
-        var stringData: Data = Data()
-
-        for index in 0..<blockCount {
-            let blockIndex = index * DES.blockSize
-            let cypherBlock = cypherData.subdata(in: blockIndex..<(blockIndex + DES.blockSize))
-            let block: UInt64 = UInt64(cypherBlock)
-
-            setCyperBlock(block)
-            let stringBlock = decryptBlock()
-
-            let byteArray = convertToByteArray(stringBlock)
-            stringData.append(contentsOf:byteArray)
-        }
-
-        return stringData
+        return crypt(cypherData, setBlock: setCyperBlock, transform: decryptBlock)
     }
 
     internal func crypt(_ inData: Data, setBlock: (_ block: UInt64)->Void, transform: ()->UInt64 ) -> Data {
@@ -61,10 +31,8 @@ public class DES {
             let inBlock = inData.subdata(in: blockIndex..<(blockIndex + DES.blockSize))
             let block: UInt64 = UInt64(inBlock)
 
-            //
             setBlock(block)
             let stringBlock = transform()
-            //
 
             let byteArray = convertToByteArray(stringBlock)
             outData.append(contentsOf:byteArray)

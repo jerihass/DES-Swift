@@ -24,3 +24,15 @@ func unpad(data: Data) -> String {
     }
     return ""
 }
+
+func convertToByteArray(_ block: UInt64) -> [UInt8] {
+    var byteArray: [UInt8] = Array(repeating: 0, count: MemoryLayout<UInt64>.size)
+    withUnsafeBytes(of: block) { rawBufferPointer in
+        if let baseAddress = rawBufferPointer.baseAddress {
+            byteArray.withUnsafeMutableBytes { mutableRawBufferPointer in
+                mutableRawBufferPointer.copyMemory(from: UnsafeRawBufferPointer(start: baseAddress, count: MemoryLayout<UInt64>.size))
+            }
+        }
+    }
+    return byteArray
+}

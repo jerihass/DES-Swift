@@ -24,18 +24,9 @@ public class DES {
             let block: UInt64 = stringBlock.withUnsafeBytes({ pointer in
                 pointer.load(as: UInt64.self)
             })
-
             setMessageBlock(block)
             let cypherBlock = encryptBlock()
-
-            var byteArray: [UInt8] = Array(repeating: 0, count: MemoryLayout<UInt64>.size)
-            withUnsafeBytes(of: cypherBlock) { rawBufferPointer in
-                if let baseAddress = rawBufferPointer.baseAddress {
-                    byteArray.withUnsafeMutableBytes { mutableRawBufferPointer in
-                        mutableRawBufferPointer.copyMemory(from: UnsafeRawBufferPointer(start: baseAddress, count: MemoryLayout<UInt64>.size))
-                    }
-                }
-            }
+            let byteArray = convertToByteArray(cypherBlock)
             cypherData.append(contentsOf:byteArray)
         }
 
@@ -52,18 +43,9 @@ public class DES {
             let block: UInt64 = cypherBlock.withUnsafeBytes({ pointer in
                 pointer.load(as: UInt64.self)
             })
-
             setCyperBlock(block)
             let stringBlock = decryptBlock()
-
-            var byteArray: [UInt8] = Array(repeating: 0, count: MemoryLayout<UInt64>.size)
-            withUnsafeBytes(of: stringBlock) { rawBufferPointer in
-                if let baseAddress = rawBufferPointer.baseAddress {
-                    byteArray.withUnsafeMutableBytes { mutableRawBufferPointer in
-                        mutableRawBufferPointer.copyMemory(from: UnsafeRawBufferPointer(start: baseAddress, count: MemoryLayout<UInt64>.size))
-                    }
-                }
-            }
+            let byteArray = convertToByteArray(stringBlock)
             stringData.append(contentsOf:byteArray)
         }
 

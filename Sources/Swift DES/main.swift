@@ -12,7 +12,7 @@ import Foundation
 
 let key = "mysecret".uint64!
 print(String(key, radix: 16))
-let des1 = DES(vector: key)
+let des1 = DES(key: key)
 let message = "HeyaayeH".uint64!
 des1.setMessageBlock(message)
 let cyphertext = des1.encryptBlock()

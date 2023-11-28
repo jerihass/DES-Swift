@@ -9,9 +9,13 @@ public class DES {
     var cypherBlock: UInt64?
     var pc2List: [UInt64]!
 
-    public init(vector: UInt64 = UInt64.random(in: 0...UInt64.max)) {
-        self.key = vector
+    public init(key: UInt64 = UInt64.random(in: 0...UInt64.max), mode: Mode = .ECB) {
+        self.key = key
         pc2List = generatePC2List()
+    }
+
+    public enum Mode {
+        case ECB
     }
 
     public func encrypt(_ stringData: Data) -> Data? {
@@ -22,13 +26,13 @@ public class DES {
         return crypt(cypherData, setBlock: setCyperBlock, transform: decryptBlock)
     }
 
-    internal func crypt(_ inData: Data, setBlock: (_ block: UInt64)->Void, transform: ()->UInt64 ) -> Data {
-        let blockCount = inData.count / 8
+    internal func crypt(_ data: Data, setBlock: (_ block: UInt64) -> Void, transform: () -> UInt64 ) -> Data {
+        let blockCount = data.count / 8
         var outData: Data = Data()
 
         for index in 0..<blockCount {
             let blockIndex = index * DES.blockSize
-            let inBlock = inData.subdata(in: blockIndex..<(blockIndex + DES.blockSize))
+            let inBlock = data.subdata(in: blockIndex..<(blockIndex + DES.blockSize))
             let block: UInt64 = UInt64(inBlock)
 
             setBlock(block)

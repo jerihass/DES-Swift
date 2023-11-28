@@ -21,4 +21,15 @@ extension String {
         }
         self = String(bytes: byteArray, encoding: .utf8) ?? ""
     }
+
+    public var uint64Array: [UInt64] {
+        guard let data = self.data(using: .utf8) else { return [] }
+        return data.withUnsafeBytes { pointer in
+            var bytes: [UInt64] = [UInt64]()
+            for offset in stride(from: 0, to: data.count, by: 8) {
+                bytes.append(pointer.load(fromByteOffset: offset, as: UInt64.self))
+            }
+            return bytes
+        }
+    }
 }

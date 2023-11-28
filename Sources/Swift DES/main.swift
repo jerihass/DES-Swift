@@ -8,7 +8,9 @@
 import Foundation
 import des
 
-let des1 = DES()
+let key = "mysecret".uint64!
+print(String(key, radix: 16))
+let des1 = DES(vector: key)
 let message = "HeyaayeH".uint64!
 des1.setMessageBlock(message)
 let cyphertext = des1.encryptBlock()
@@ -43,6 +45,10 @@ func tripleDESTripleKey(_ message: UInt64) -> UInt64 {
     return plain
 }
 // TODO:
-// - 64bit padding
+// - 64bit padding pad("string", block_size) = 'string\0\2'
 // - make way to handle long string of input
+// -- ECB MODE -- no IV
+// -- CBC MODE -- ?
+// -- CFB MODE?
+// -- CTS MODE?
 

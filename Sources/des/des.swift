@@ -235,6 +235,8 @@ public class DES {
         let combined = leftShifted | UInt64(right)
         return pc2Create(combined)
     }
+
+    static let blockSize: Int = 8
 }
 
 extension DES {

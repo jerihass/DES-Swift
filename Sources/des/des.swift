@@ -117,6 +117,30 @@ public class DES {
         return outData
     }
 
+    internal func cbcCrypt(_ data: Data, setBlock: (_ block: UInt64) -> Void, transform: () -> UInt64) -> Data {
+        let blockCount = data.count / 8
+        var outData: Data = Data()
+        var vector = initializationVector
+        for index in 0..<blockCount {
+            let blockIndex = index * DES.blockSize
+            let inBlock = data.subdata(in: blockIndex..<(blockIndex + DES.blockSize))
+            let block: UInt64 = UInt64(inBlock)
+
+            let stringBlock = doThing(block)
+
+            let byteArray = convertToByteArray(stringBlock)
+            outData.append(contentsOf:byteArray)
+        }
+        return outData
+
+        func doThing(_ block: UInt64) -> UInt64 {
+            setBlock(block ^ vector)
+            let stringBlock = transform()
+            vector = stringBlock
+            return stringBlock
+        }
+    }
+
     internal func setMessageBlock(_ block: UInt64) {
         messageBlock = block
     }
@@ -150,27 +174,23 @@ public class DES {
 //    }
 
     internal func encryptBlock() -> UInt64 {
-        // IP -> Rounds() -> 32bitSwap -> IP -> output
         guard let message = messageBlock else { return 0 }
-        let ip = initialPermutation(of: message)
-        guard var round = ip else { return 0 }
-        for list in pc2List {
-            let result = cryptedBlock(input: round, with: list)
-            round = combine32Bits(result.0, result.1)
-        }
-        let swapped = swap64(round)
-        let inv = inversePermutation(swapped)
-        return inv
+        return ecbFunc(message, pc2: pc2List)
     }
 
     internal func decryptBlock() -> UInt64 {
         guard let cypher = cypherBlock else { return 0 }
-        guard let ip = initialPermutation(of: cypher) else { return 0 }
-        var round = ip
-        for list in pc2List.reversed() {
+        return ecbFunc(cypher, pc2: pc2List.reversed())
+    }
+
+    internal func ecbFunc(_ block: UInt64, pc2: [UInt64]) -> UInt64 {
+        guard var round = initialPermutation(of: block) else { return 0}
+
+        for list in pc2 {
             let result = cryptedBlock(input: round, with: list)
             round = combine32Bits(result.0, result.1)
         }
+
         let swapped = swap64(round)
         let inv = inversePermutation(swapped)
         return inv

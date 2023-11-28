@@ -4,7 +4,7 @@
 
 import Foundation
 
-func pad(string: String, amount: Int) -> Data? {
+public func pad(string: String, amount: Int) -> Data? {
     guard var data = string.data(using: .utf8) else { return nil }
     if data.count % amount != 0 {
         let fillCount: Int = amount - (data.count % amount) - 1
@@ -15,7 +15,7 @@ func pad(string: String, amount: Int) -> Data? {
     return data
 }
 
-func unpad(data: Data) -> String {
+public func unpad(data: Data) -> String {
     guard let lastByte = data.last else { return "" }
     if (lastByte > 0 && lastByte < 8) {
         var actual = data.dropLast(Int(lastByte)).compactMap({UInt8($0)})

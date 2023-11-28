@@ -8,22 +8,55 @@ public class DES {
     var messageBlock: UInt64?
     var cypherBlock: UInt64?
     var pc2List: [UInt64]!
+    let mode: Mode
 
     public init(key: UInt64 = UInt64.random(in: 0...UInt64.max), mode: Mode = .ECB) {
         self.key = key
+        self.mode = mode
         pc2List = generatePC2List()
     }
 
     public enum Mode {
         case ECB
+        case CBC
+        case CFB
+        case CTS //?
     }
 
+    public static let blockSize: Int = 8
+
     public func encrypt(_ stringData: Data) -> Data? {
-        return crypt(stringData, setBlock: setMessageBlock, transform: encryptBlock)
+        return encryptFunction(stringData)
     }
 
     public func decrypt(_ cypherData: Data) -> Data? {
-        return crypt(cypherData, setBlock: setCyperBlock, transform: decryptBlock)
+        return decryptFunction(cypherData)
+    }
+
+    private func encryptFunction(_ plainText: Data) -> Data {
+        switch mode {
+        case .ECB:
+            return crypt(plainText, setBlock: setMessageBlock, transform: encryptBlock)
+        case .CBC:
+            return Data()
+        case .CFB:
+            return Data()
+        case .CTS:
+            return Data()
+        }
+    }
+
+    private func decryptFunction(_ cypherText: Data) -> Data {
+        switch mode {
+        case .ECB:
+            return crypt(cypherText, setBlock: setCyperBlock, transform: decryptBlock)
+        case .CBC:
+            return Data()
+        case .CFB:
+            return Data()
+        case .CTS:
+            return Data()
+        }
     }
 
     internal func crypt(_ data: Data, setBlock: (_ block: UInt64) -> Void, transform: () -> UInt64 ) -> Data {
@@ -51,6 +84,30 @@ public class DES {
 
     internal func setCyperBlock(_ block: UInt64) {
         cypherBlock = block
+    }
+
+    private func tripleDESTripleKey(_ message: UInt64) -> UInt64 {
+        let des1 = DES()
+        let des2 = DES()
+        let des3 = DES()
+
+        // encrypt
+        des1.setMessageBlock(message)
+        var cypher = des1.encryptBlock()
+        des2.setCyperBlock(cypher)
+        cypher = des2.decryptBlock()
+        des3.setMessageBlock(cypher)
+        cypher = des3.encryptBlock()
+
+        // decrypt
+        des3.setCyperBlock(cypher)
+        var plain = des3.decryptBlock()
+        des2.setMessageBlock(plain)
+        plain = des2.encryptBlock()
+        des1.setCyperBlock(plain)
+        plain = des1.decryptBlock()
+
+        return plain
     }
 
     internal func encryptBlock() -> UInt64 {
@@ -266,8 +323,6 @@ public class DES {
         let combined = leftShifted | UInt64(right)
         return pc2Create(combined)
     }
-
-    static let blockSize: Int = 8
 }
 
 extension DES {

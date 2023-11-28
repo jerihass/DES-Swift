@@ -5,12 +5,12 @@
 import Foundation
 
 extension String {
-    var uint64: UInt64? {
+    public var uint64: UInt64? {
         guard let data = self.data(using: .utf8) else { return nil }
         return data.withUnsafeBytes { $0.load(as: UInt64.self) }
     }
 
-    init(_ uint64: UInt64) {
+    public init(_ uint64: UInt64) {
         var byteArray: [UInt8] = Array(repeating: 0, count: MemoryLayout<UInt64>.size)
         withUnsafeBytes(of: uint64) { rawBufferPointer in
             if let baseAddress = rawBufferPointer.baseAddress {

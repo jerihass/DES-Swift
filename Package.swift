@@ -22,7 +22,7 @@ let package = Package(
             name: "des"),
         .executableTarget(
             name: "Swift DES",
-        dependencies: ["des"]),
+            dependencies: ["des"]),
         .testTarget(
             name: "desTests",
             dependencies: ["des"]),

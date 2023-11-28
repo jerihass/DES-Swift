@@ -22,17 +22,27 @@ public func unpad(data: Data) -> String {
         actual.append(UInt8())
         return String(cString: actual)
     }
-    return ""
+    var temp = data
+    temp.append(UInt8())
+    return String(cString: temp.compactMap({UInt8($0)}))
 }
 
 func convertToByteArray(_ block: UInt64) -> [UInt8] {
-    var byteArray: [UInt8] = Array(repeating: 0, count: MemoryLayout<UInt64>.size)
-    withUnsafeBytes(of: block) { rawBufferPointer in
-        if let baseAddress = rawBufferPointer.baseAddress {
-            byteArray.withUnsafeMutableBytes { mutableRawBufferPointer in
-                mutableRawBufferPointer.copyMemory(from: UnsafeRawBufferPointer(start: baseAddress, count: MemoryLayout<UInt64>.size))
-            }
-        }
+//    var byteArray: [UInt8] = Array(repeating: 0, count: MemoryLayout<UInt64>.size)
+//    withUnsafeBytes(of: block) { rawBufferPointer in
+//        if let baseAddress = rawBufferPointer.baseAddress {
+//            byteArray.withUnsafeMutableBytes { mutableRawBufferPointer in
+//                mutableRawBufferPointer.copyMemory(from: UnsafeRawBufferPointer(start: baseAddress, count: MemoryLayout<UInt64>.size))
+//            }
+//        }
+//    }
+//    return byteArray
+    var result: [UInt8] = []
+
+    for i in 0..<8 {
+        let byte = UInt8((block >> (8 * i)) & 0xFF)
+        result.append(byte)
     }
-    return byteArray
+
+    return result
 }

@@ -195,7 +195,7 @@ final class desTests: XCTestCase {
     }
 
     func test_shouldEncryptAndDecrypt() throws {
-        let message: UInt64 = "lock🔐".uint64!
+        let message: UInt64 = "Lock🔐".uint64!
         let sut = DES()
         sut.setMessageBlock(message)
         let encrypted = sut.encryptBlock()
@@ -206,9 +206,19 @@ final class desTests: XCTestCase {
         XCTAssertEqual(message, decrypted)
     }
 
-    func test_shouldEncryptDecrypt() throws {
-        let message = "📧📧📧📧📧📧📧📧📧📧📧"
+    func test_shouldEncryptDecrypt_ECB() throws {
+        let message = "12345678"
         let sut = DES()
+        let cypherText = sut.encrypt(pad(string: message, amount: DES.blockSize)!)!
+        print(cypherText.base64EncodedString())
+        let decrypted = unpad(data: sut.decrypt(cypherText)!)
+        XCTAssertEqual(decrypted, message)
+    }
+
+    func test_shouldEncryptDecrypt_CBC() throws {
+        let message = "1234567891123456"
+        let sut = DES(mode: .CBC)
+        let iv = sut.initializationVector
         let cypherText = sut.encrypt(pad(string: message, amount: DES.blockSize)!)!
         print(cypherText.base64EncodedString())
         let decrypted = unpad(data: sut.decrypt(cypherText)!)

@@ -8,11 +8,13 @@ public class DES {
     var messageBlock: UInt64?
     var cypherBlock: UInt64?
     var pc2List: [UInt64]!
+    let initializationVector: UInt64
     let mode: Mode
 
     public init(key: UInt64 = UInt64.random(in: 0...UInt64.max), mode: Mode = .ECB) {
         self.key = key
         self.mode = mode
+        initializationVector = UInt64.random(in: 0...UInt64.max)
         pc2List = generatePC2List()
     }
 
@@ -38,7 +40,7 @@ public class DES {
         case .ECB:
             return crypt(plainText, setBlock: setMessageBlock, transform: encryptBlock)
         case .CBC:
-            return Data()
+            return cbcEncrypt(plainText, setBlock: setMessageBlock, transform: encryptBlock)
         case .CFB:
             return Data()
         case .CTS:
@@ -51,7 +53,7 @@ public class DES {
         case .ECB:
             return crypt(cypherText, setBlock: setCyperBlock, transform: decryptBlock)
         case .CBC:
-            return Data()
+            return cbcDecrypt(cypherText, setBlock: setCyperBlock, transform: decryptBlock)
         case .CFB:
             return Data()
         case .CTS:
@@ -74,7 +76,44 @@ public class DES {
             let byteArray = convertToByteArray(stringBlock)
             outData.append(contentsOf:byteArray)
         }
+        return outData
+    }
 
+    internal func cbcEncrypt(_ data: Data, setBlock: (_ block: UInt64) -> Void, transform: () -> UInt64) -> Data {
+        let blockCount = data.count / 8
+        var outData: Data = Data()
+        var vector = initializationVector
+        for index in 0..<blockCount {
+            let blockIndex = index * DES.blockSize
+            let inBlock = data.subdata(in: blockIndex..<(blockIndex + DES.blockSize))
+            let block: UInt64 = UInt64(inBlock)
+
+            setBlock(block ^ vector)
+            let stringBlock = transform()
+            vector = stringBlock
+
+            let byteArray = convertToByteArray(stringBlock)
+            outData.append(contentsOf:byteArray)
+        }
+        return outData
+    }
+
+    internal func cbcDecrypt(_ data: Data, setBlock: (_ block: UInt64) -> Void, transform: () -> UInt64) -> Data {
+        let blockCount = data.count / 8
+        var outData: Data = Data()
+        var vector = initializationVector
+        for index in 0..<blockCount {
+            let blockIndex = index * DES.blockSize
+            let inBlock = data.subdata(in: blockIndex..<(blockIndex + DES.blockSize))
+            let block: UInt64 = UInt64(inBlock)
+
+            setBlock(block)
+            let stringBlock = (transform() ^ vector)
+            vector = block
+
+            let byteArray = convertToByteArray(stringBlock)
+            outData.append(contentsOf:byteArray)
+        }
         return outData
     }
 
@@ -86,29 +125,29 @@ public class DES {
         cypherBlock = block
     }
 
-    private func tripleDESTripleKey(_ message: UInt64) -> UInt64 {
-        let des1 = DES()
-        let des2 = DES()
-        let des3 = DES()
-
-        // encrypt
-        des1.setMessageBlock(message)
-        var cypher = des1.encryptBlock()
-        des2.setCyperBlock(cypher)
-        cypher = des2.decryptBlock()
-        des3.setMessageBlock(cypher)
-        cypher = des3.encryptBlock()
-
-        // decrypt
-        des3.setCyperBlock(cypher)
-        var plain = des3.decryptBlock()
-        des2.setMessageBlock(plain)
-        plain = des2.encryptBlock()
-        des1.setCyperBlock(plain)
-        plain = des1.decryptBlock()
-
-        return plain
-    }
+//    private func tripleDESTripleKey(_ message: UInt64) -> UInt64 {
+//        let des1 = DES()
+//        let des2 = DES()
+//        let des3 = DES()
+//
+//        // encrypt
+//        des1.setMessageBlock(message)
+//        var cypher = des1.encryptBlock()
+//        des2.setCyperBlock(cypher)
+//        cypher = des2.decryptBlock()
+//        des3.setMessageBlock(cypher)
+//        cypher = des3.encryptBlock()
+//
+//        // decrypt
+//        des3.setCyperBlock(cypher)
+//        var plain = des3.decryptBlock()
+//        des2.setMessageBlock(plain)
+//        plain = des2.encryptBlock()
+//        des1.setCyperBlock(plain)
+//        plain = des1.decryptBlock()
+//
+//        return plain
+//    }
 
     internal func encryptBlock() -> UInt64 {
         // IP -> Rounds() -> 32bitSwap -> IP -> output

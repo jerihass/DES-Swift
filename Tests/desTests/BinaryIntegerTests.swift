@@ -56,15 +56,23 @@ final class BinaryIntegerTests: XCTestCase {
     }
 //
     func test_shouldUnpadString() throws {
-        var myString = "A"
+        var myString = "12345678"
         var data = try XCTUnwrap(pad(string: myString, amount: DES.blockSize))
         var unpadded = String(unpad(data: data))
-        XCTAssertEqual(unpadded, "A")
+        XCTAssertEqual(unpadded, "12345678")
 
         myString = "AAAAAAAAA"
         data = try XCTUnwrap(pad(string: myString, amount: DES.blockSize))
         unpadded = String(unpad(data: data))
         XCTAssertEqual(unpadded, "AAAAAAAAA")
+    }
+
+    func test_shouldConvertToByteArray() throws {
+        let myString = "message!"
+        let byteArray = convertToByteArray(myString.uint64!)
+        XCTAssertEqual(byteArray.count, 8)
+        XCTAssertEqual(byteArray, [109, 101, 115, 115, 97, 103, 101, 33])
+        //stringBlock    UInt64    4d 65 73 73 61 67 65 21                         Message!
     }
 }
 

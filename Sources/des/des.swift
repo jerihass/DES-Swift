@@ -79,10 +79,8 @@ public class DES {
         return outData
     }
 
-    internal func chainCrypt(_ data: Data,
-                             setBlock: (_ block: UInt64) -> Void,
-                             transform: () -> UInt64,
-                             encrypt: Bool) -> Data {
+    internal func chainCrypt(_ data: Data, setBlock: (_ block: UInt64) -> Void,
+                             transform: () -> UInt64, encrypt: Bool) -> Data {
         let blockCount = data.count / 8
         var outData: Data = Data()
         var vector = initializationVector
@@ -250,7 +248,6 @@ public class DES {
             let bit4 = UInt8((bit48 << i) >> 58)
             output.append(bit4)
         }
-
         return output
     }
 

@@ -198,9 +198,9 @@ final class desTests: XCTestCase {
         let message: UInt64 = "Lock🔐".uint64!
         let sut = DES()
         sut.setMessageBlock(message)
-        let encrypted = sut.encryptBlock()
+        let encrypted = sut.encryption()
         sut.setCyperBlock(encrypted)
-        let decrypted = sut.decryptBlock()
+        let decrypted = sut.decryption()
         XCTAssertNotEqual(encrypted, 0)
         XCTAssertNotEqual(decrypted, 0)
         XCTAssertEqual(message, decrypted)
@@ -225,3 +225,27 @@ final class desTests: XCTestCase {
         XCTAssertEqual(decrypted, message)
     }
 }
+
+//    private func tripleDESTripleKey(_ message: UInt64) -> UInt64 {
+//        let des1 = DES()
+//        let des2 = DES()
+//        let des3 = DES()
+//
+//        // encrypt
+//        des1.setMessageBlock(message)
+//        var cypher = des1.encryptBlock()
+//        des2.setCyperBlock(cypher)
+//        cypher = des2.decryptBlock()
+//        des3.setMessageBlock(cypher)
+//        cypher = des3.encryptBlock()
+//
+//        // decrypt
+//        des3.setCyperBlock(cypher)
+//        var plain = des3.decryptBlock()
+//        des2.setMessageBlock(plain)
+//        plain = des2.encryptBlock()
+//        des1.setCyperBlock(plain)
+//        plain = des1.decryptBlock()
+//
+//        return plain
+//    }

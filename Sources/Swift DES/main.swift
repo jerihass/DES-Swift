@@ -16,10 +16,8 @@ let plaintext = des1.decrypt(cyphertext ?? Data())
 print(String(message) + " " + String(unpad(data: plaintext ?? Data())))
 
 // TODO:
-// - 64bit padding pad("string", block_size) = 'string\0\2'
-// - make way to handle long string of input
 // ✅ ECB MODE -- no IV
-// ☑️ CBC MODE -- ?
+// ✅ CBC MODE --
 // ☑️ CFB MODE?
 // ☑️ CTS MODE?
 

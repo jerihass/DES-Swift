@@ -218,7 +218,6 @@ final class desTests: XCTestCase {
     func test_shouldEncryptDecrypt_CBC() throws {
         let message = "1234567891123456"
         let sut = DES(mode: .CBC)
-        let iv = sut.initializationVector
         let cypherText = sut.encrypt(pad(string: message, amount: DES.blockSize)!)!
         print(cypherText.base64EncodedString())
         let decrypted = unpad(data: sut.decrypt(cypherText)!)

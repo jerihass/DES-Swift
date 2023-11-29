@@ -38,9 +38,9 @@ public class DES {
     private func encryptFunction(_ plainText: Data) -> Data {
         switch mode {
         case .ECB:
-            return ecbCrypt(plainText, setBlock: setMessageBlock, transform: encryption)
+            return bookCrypt(plainText, setBlock: setMessageBlock, transform: feistelEncryption)
         case .CBC:
-            return cbcEncrypt(plainText, setBlock: setMessageBlock, transform: encryption)
+            return chainCrypt(plainText, setBlock: setMessageBlock, transform: feistelEncryption, encrypt: true)
         case .CFB:
             return Data()
         case .CTS:
@@ -51,9 +51,9 @@ public class DES {
     private func decryptFunction(_ cypherText: Data) -> Data {
         switch mode {
         case .ECB:
-            return ecbCrypt(cypherText, setBlock: setCyperBlock, transform: decryption)
+            return bookCrypt(cypherText, setBlock: setCyperBlock, transform: feistelDecryption)
         case .CBC:
-            return cbcDecrypt(cypherText, setBlock: setCyperBlock, transform: decryption)
+            return chainCrypt(cypherText, setBlock: setCyperBlock, transform: feistelDecryption, encrypt: false)
         case .CFB:
             return Data()
         case .CTS:
@@ -61,7 +61,7 @@ public class DES {
         }
     }
 
-    internal func ecbCrypt(_ data: Data, setBlock: (_ block: UInt64) -> Void, transform: () -> UInt64 ) -> Data {
+    internal func bookCrypt(_ data: Data, setBlock: (_ block: UInt64) -> Void, transform: () -> UInt64 ) -> Data {
         let blockCount = data.count / 8
         var outData: Data = Data()
 
@@ -79,7 +79,10 @@ public class DES {
         return outData
     }
 
-    internal func cbcEncrypt(_ data: Data, setBlock: (_ block: UInt64) -> Void, transform: () -> UInt64) -> Data {
+    internal func chainCrypt(_ data: Data,
+                             setBlock: (_ block: UInt64) -> Void,
+                             transform: () -> UInt64,
+                             encrypt: Bool) -> Data {
         let blockCount = data.count / 8
         var outData: Data = Data()
         var vector = initializationVector
@@ -87,48 +90,16 @@ public class DES {
             let blockIndex = index * DES.blockSize
             let inBlock = data.subdata(in: blockIndex..<(blockIndex + DES.blockSize))
             let block: UInt64 = UInt64(inBlock)
-
-            setBlock(block ^ vector)
-            let stringBlock = transform()
-            vector = stringBlock
-
-            let byteArray = convertToByteArray(stringBlock)
-            outData.append(contentsOf:byteArray)
-        }
-        return outData
-    }
-
-    internal func cbcCrypt(_ data: Data, setBlock: (_ block: UInt64) -> Void, transform: () -> UInt64) -> Data {
-        let blockCount = data.count / 8
-        var outData: Data = Data()
-        var vector = initializationVector
-        for index in 0..<blockCount {
-            let blockIndex = index * DES.blockSize
-            let inBlock = data.subdata(in: blockIndex..<(blockIndex + DES.blockSize))
-            let block: UInt64 = UInt64(inBlock)
-
-            setBlock(block)
-            let stringBlock = (transform() ^ vector)
-            vector = block
-
-            let byteArray = convertToByteArray(stringBlock)
-            outData.append(contentsOf:byteArray)
-        }
-        return outData
-    }
-
-    internal func cbcDecrypt(_ data: Data, setBlock: (_ block: UInt64) -> Void, transform: () -> UInt64) -> Data {
-        let blockCount = data.count / 8
-        var outData: Data = Data()
-        var vector = initializationVector
-        for index in 0..<blockCount {
-            let blockIndex = index * DES.blockSize
-            let inBlock = data.subdata(in: blockIndex..<(blockIndex + DES.blockSize))
-            let block: UInt64 = UInt64(inBlock)
-
-            setBlock(block)
-            let stringBlock = (transform() ^ vector)
-            vector = block
+            var stringBlock: UInt64
+            if encrypt {
+                setBlock(block ^ vector)
+                stringBlock = transform()
+                vector = stringBlock
+            } else {
+                setBlock(block)
+                stringBlock = (transform() ^ vector)
+                vector = block
+            }
 
             let byteArray = convertToByteArray(stringBlock)
             outData.append(contentsOf:byteArray)
@@ -144,12 +115,12 @@ public class DES {
         cypherBlock = block
     }
 
-    internal func encryption() -> UInt64 {
+    internal func feistelEncryption() -> UInt64 {
         guard let message = messageBlock else { return 0 }
         return feistel(message, pc2: pc2List)
     }
 
-    internal func decryption() -> UInt64 {
+    internal func feistelDecryption() -> UInt64 {
         guard let cypher = cypherBlock else { return 0 }
         return feistel(cypher, pc2: pc2List.reversed())
     }

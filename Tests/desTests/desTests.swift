@@ -198,9 +198,9 @@ final class desTests: XCTestCase {
         let message: UInt64 = "Lock🔐".uint64!
         let sut = DES()
         sut.setMessageBlock(message)
-        let encrypted = sut.encryption()
+        let encrypted = sut.feistelEncryption()
         sut.setCyperBlock(encrypted)
-        let decrypted = sut.decryption()
+        let decrypted = sut.feistelDecryption()
         XCTAssertNotEqual(encrypted, 0)
         XCTAssertNotEqual(decrypted, 0)
         XCTAssertEqual(message, decrypted)

@@ -227,7 +227,7 @@ final class desTests: XCTestCase {
 
 //    private func tripleDESTripleKey(_ message: UInt64) -> UInt64 {
 //        let des1 = DES()
-//        let des2 = DES()
+//        let des2 = DES() // "something"
 //        let des3 = DES()
 //
 //        // encrypt

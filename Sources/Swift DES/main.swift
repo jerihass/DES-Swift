@@ -8,16 +8,17 @@
 import Foundation
 import des
 
-let des1 = DES()
-let message = "HeyaayeH"
+let des1 = DES(mode: .CBC)
+let message = "This is a longer message of some length that we aren't checking! 🥸"
 let cyphertext = des1.encrypt(pad(string: message, amount: DES.blockSize) ?? Data())
 let plaintext = des1.decrypt(cyphertext ?? Data())
 
-print(String(message) + " " + String(unpad(data: plaintext ?? Data())))
+print(String(message) + "\n" + String(unpad(data: plaintext ?? Data())))
 
 // TODO:
-// ✅ ECB MODE -- no IV
-// ✅ CBC MODE --
+// ☑️ Triple / Multi DES
+// ✅ ECB MODE
+// ✅ CBC MODE
 // ☑️ CFB MODE?
 // ☑️ CTS MODE?
 

@@ -1,5 +1,5 @@
 import XCTest
-@testable import des
+@testable import SLCrypto
 
 final class desTests: XCTestCase {
 

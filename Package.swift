@@ -4,7 +4,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "des",
+    name: "SLCrypto",
     platforms: [.macOS(.v11)],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
@@ -12,19 +12,19 @@ let package = Package(
             name: "Swift DES",
             targets: ["Swift DES"]),
         .library(
-            name: "des",
-            targets: ["des"]),
+            name: "SLCrypto",
+            targets: ["SLCrypto"]),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
-            name: "des"),
+            name: "SLCrypto"),
         .executableTarget(
             name: "Swift DES",
-            dependencies: ["des"]),
+            dependencies: ["SLCrypto"]),
         .testTarget(
-            name: "desTests",
-            dependencies: ["des"]),
+            name: "SLCryptoTests",
+            dependencies: ["SLCrypto"]),
     ]
 )

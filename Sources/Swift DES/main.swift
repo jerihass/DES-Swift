@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import des
+import SLCrypto
 
 let des1 = DES(mode: .CBC)
 let message = "This is a longer message of some length that we aren't checking! 🥸"

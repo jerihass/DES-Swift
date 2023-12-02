@@ -3,7 +3,7 @@
 //
 
 import XCTest
-@testable import des
+@testable import SLCrypto
 
 final class BinaryIntegerTests: XCTestCase {
     func test_shouldSplit64() throws {
